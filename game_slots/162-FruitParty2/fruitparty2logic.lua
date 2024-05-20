@@ -6,11 +6,14 @@ local ROWS = 7
 local COLS = 7
 
 function StartToImagePool(imageType)
-    if imageType == 1 then
+     if imageType == 1 then
         return Normal()
     elseif imageType == 2 then
         --跑免费图库
-        return Free()
+        return BuyFree()
+	elseif imageType ==3 then
+	--跑免费图库
+		return Free()
     end
 end
 local GetDisinfoMul=function(disInfo)
@@ -45,7 +48,7 @@ function NormaltoFree()
     local FinMul = arrangeToSave(disInfos)
     return disInfos, FinMul
 end 
-function Free()
+function BuyFree()
     --默认15次
     local tFreeNum =10
     local cFreeNum = 0
@@ -99,6 +102,60 @@ function Free()
     return allDisInfos, mul, 2
 end
 
+function Free()
+    --默认15次
+    local tFreeNum =10
+    local cFreeNum = 0
+    --全部u图标累计
+    local allUMul = 0
+    --普通倍数  
+    local normalMul = 0
+    local allDisInfos = {}
+	local NormaltoFreechessdata,NormaltoFreechessdataFinMul = NormaltoFree()
+	table.insert(allDisInfos, NormaltoFreechessdata)
+    while true do
+        local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_normalspin_1) --table_162_free_1
+        iconRealId = 1
+        fillCellToId(chessdata)
+        --总消除数据，after触发免费后的数据
+        --一次棋盘消除数据
+        local disInfos = {  }
+        local disId = {}
+		--printchessdata(chessdata)
+        local disInfo, tchessdata = chessdataHandle(chessdata, lastColRow, disId, true)
+	--	printchessdata(tchessdata)
+        table.insert(disInfos, disInfo)
+        while table.empty(disInfo.dis) == false do
+            disInfo, tchessdata = chessdataHandle(tchessdata, lastColRow, disId, true)
+		--	printchessdata(tchessdata)
+            table.insert(disInfos, disInfo)
+        end
+ 
+        --进行倍数图标处理,统计s个数,倍数图标返回倍数
+        local sNum = mulIconFunctionAndReChess(disInfos, disId, true)
+        --对棋盘数据进行最终整理,计算棋盘mul
+        local FinMul = arrangeToSave(disInfos)
+		if normalMul  > 300 and FinMul >0 then 
+
+
+
+		else
+			normalMul = normalMul + FinMul
+			cFreeNum = cFreeNum + 1
+			table.insert(allDisInfos, disInfos)
+			if sNum >= 3 then
+				tFreeNum = tFreeNum + 5
+			end
+		end
+        if cFreeNum >= tFreeNum then
+            break
+        end
+    end
+    --进行最终倍数计算
+    local mul = normalMul +NormaltoFreechessdataFinMul
+    return allDisInfos, mul, 3
+end
+
 function Normal()
     --table_162_normalspin_1
     local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_normalspin_1)
@@ -127,9 +184,26 @@ function Normal()
     local imageType = 1
     --对棋盘数据进行最终整理,计算最终mul
     local FinMul = arrangeToSave(disInfos)
+	if  check_is_to_free(disInfos) then --如果普通随机到图库就直接不进去
+		imageType = 3
+	end
     return disInfos, FinMul, imageType
 end
-
+function check_is_to_free(disInfos)
+	local chessdata = disInfos[#disInfos].chessdata --找到最后一幅图
+	local sNum = 0
+	for col = 1, #chessdata do
+		for row = 1, #chessdata[col] do
+			local Id = chessdata[col][row].Id
+			local val = chessdata[col][row].val
+			if val == 70 then
+				sNum = sNum + 1
+			end
+		end
+	end
+	return  sNum >= 4
+      
+end 
 --对数据进行整理保存
 function arrangeToSave(disInfos)
     local FinMul = 0
