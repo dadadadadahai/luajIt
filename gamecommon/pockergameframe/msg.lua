@@ -1,0 +1,8 @@
+-- --消息注册函数
+-- Net.CmdPockerEnterCmd_C=function (cmd,laccount)
+--     pockergameframe.EnterCmd_C(cmd.data.gameId,cmd.data.gameType,laccount.Id)
+-- end
+-- --消息函数
+-- Net.CmdMsgHandleCmd_C=function (cmd,laccount)
+--     pockergameframe.MsgHandleCmd_C(cmd.data.gameId,laccount.Id,cmd.data.msg)
+-- end

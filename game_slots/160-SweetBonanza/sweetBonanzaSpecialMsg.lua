@@ -1,0 +1,7 @@
+-- -- 玩家购买免费
+-- Net.CmdCleopatraNewBuyFreeCmd_C= function(cmd, laccount)
+--     cleopatraNew.CmdBuyFree(laccount.Id,cmd.data)
+-- end
+-- Net.CmdCleopatraNewBuyHighBetCmd_C=function (cmd,laccount)
+--     cleopatraNew.CmdBuyHighBet(laccount.Id,cmd.data)
+-- end
