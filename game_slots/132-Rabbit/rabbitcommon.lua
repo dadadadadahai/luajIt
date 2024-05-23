@@ -122,7 +122,7 @@ function GetBoards(uid,gameId,gameType,isFree,rabbitInfo)
     res.winlines[1] = {}
     -- 计算中奖线金额
     for k, v in ipairs(winlines) do
-        local addScore = v.mul * rabbitInfo.betMoney / table_132_hanglie[1].linenum
+        local addScore = v.mul * rabbitInfo.betMoney 
         res.winScore = res.winScore + addScore
         table.insert(res.winlines[1], {v.line, v.num, addScore,v.ele})
     end

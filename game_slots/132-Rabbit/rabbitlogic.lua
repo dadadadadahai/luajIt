@@ -15,9 +15,11 @@ MaxNormalIconId = 6
 LineNum = Table_Base[1].linenum
 
 function StartToImagePool(imageType)
-	if imageType == 2 then
-		return Free()
-	end 
+	if imageType == 2 then 
+		return  Free()
+	elseif imageType == 3 then 
+		return   FullIcon()
+	end
     return Normal()
 end
 function Free()
@@ -69,16 +71,7 @@ function Free()
 		-- 中奖金额
 		local winMul = 0
 		-- -- 获取中奖线
-		-- local winlines = {}
-		-- winlines[1] = {}
-		-- -- 计算中奖线金额
-		-- for k, v in ipairs(winlines) do
-		--     table.insert(winlines[1], {v.line, v.num, v.mul,v.ele})
-		--     winMul = sys.addToFloat(winMul,v.mul)
-		-- end
-		-- -- 倍数除以线数
-		-- winMul = winMul / table_132_hanglie[1].linenum
-		-- 判断U图标中奖金额
+	
 		local winMulU = GetWinScoreU(iconsAttachData)
 		winMul = sys.addToFloat(winMul,winMulU)
 		-- 生成返回数据
@@ -98,7 +91,53 @@ function Free()
 	return res, tWinMul, imageType
 
 end
+function FullIcon()
+    -- 获取W元素
+    local wilds = {}
+    wilds[W] = 1
+    local nowild = {}
+    -- 初始棋盘
+    local boards = {}
+    local isFree = false
+    local iconsAttachData = {}
+    local imageType = 1
+    -- 判断是否进入免费
+   
+	-- 生成异形棋盘
+	boards = gamecommon.CreateSpecialChessData(DataFormat,table_132_normalspin)
+	-- 根据棋盘中U图标生成对应数据
+	GetIconInfoU(boards,iconsAttachData)
+	-- 计算中奖倍数
+	local resultWinlines = gamecommon.WiningLineFinalCalc(boards,table_132_payline,table_132_paytable,wilds,nowild)
+	-- 中奖金额
+	local winMul = 0
+	-- 获取中奖线
+	local winlines = {}
+	winlines[1] = {}
+	-- 计算中奖线金额
+	for k, v in ipairs(resultWinlines) do
+		table.insert(winlines[1], {v.line, v.num, v.mul,v.ele})
+		winMul = sys.addToFloat(winMul,v.mul)
+	end
+	-- 倍数除以线数
+	winMul = winMul 
+	-- 判断U图标中奖金额
+	local winMulU = GetWinScoreU(iconsAttachData)
+	if winMulU > 0 then
+		imageType = 3
+	end
+	winMul = sys.addToFloat(winMul,winMulU)
+	-- 生成返回数据
+	local res = {
+		winlines = winlines,
+		boards = boards,
+		iconsAttachData = iconsAttachData,
+		isfake =  0
+	}
+	return res, winMul, imageType
+   
 
+end
 function Normal()
     -- 获取W元素
     local wilds = {}
@@ -177,7 +216,7 @@ function Normal()
         local res = {
             freeInfo = freeInfo,
         }
-        print('tWinMul',tWinMul)
+      
         
         return res, tWinMul, imageType
 
@@ -198,8 +237,6 @@ function Normal()
             table.insert(winlines[1], {v.line, v.num, v.mul,v.ele})
             winMul = sys.addToFloat(winMul,v.mul)
         end
-        -- 倍数除以线数
-        winMul = winMul / table_132_hanglie[1].linenum
         -- 判断U图标中奖金额
         local winMulU = GetWinScoreU(iconsAttachData)
         if winMulU > 0 then

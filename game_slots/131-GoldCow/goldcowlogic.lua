@@ -213,6 +213,44 @@ function Normal()
 		fullIconFlag = true
         winMul = winMul * 10
     end
+	res.isfake =  0
+	if not fullIconFlag and winMul == 0 then 
+		res.isfake = (math.random(10000) > spuriousPro   and 0 or  2 ) 
+		if res.isfake == 1 then  --福牛
+			-- 替换第一列和第三列
+			local iconIds =  table.series(table_131_bonusIconPro,function (v)
+				return v.iconId
+			end) 	
+			local iconId = table.remove(iconIds,math.random(#iconIds))
+			local colNum = {1,3}
+			for _, col in ipairs(colNum) do
+				for row = 1, DataFormat[col] do
+					boards[col][row] = iconId
+				end
+			end
+			for row = 1, DataFormat[2] do
+				if boards[2][row] == iconId or boards[2][row] == W then 
+					boards[2][row] = iconIds[math.random(#iconIds)]
+				end 
+			end
+		elseif res.isfake == 2 then --十倍
+			local iconIds =  table.series(table_131_bonusIconPro,function (v)
+				return v.iconId
+			end) 	
+			local iconId = table.remove(iconIds,math.random(#iconIds))
+			local colNum = {1,2}
+			for _, col in ipairs(colNum) do
+				for row = 1, DataFormat[col] do
+					boards[col][row] = iconId
+				end
+			end
+			for row = 1, DataFormat[3] do
+				if boards[3][row] == iconId or boards[3][row] == W then 
+					boards[3][row] = iconIds[math.random(#iconIds)]
+				end 
+			end
+		end 
+	end 
     -- 棋盘数据
     res.boards = boards
     res.extraData = {
@@ -220,6 +258,6 @@ function Normal()
         fullIconFlag = fullIconFlag,             -- 十倍是否触发
 		
     }
-	res.isfake = (math.random(10000) > spuriousPro   and 0 or  math.random(2) ) 
+	
     return res, winMul, 1
 end

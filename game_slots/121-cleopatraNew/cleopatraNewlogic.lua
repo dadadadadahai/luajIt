@@ -82,10 +82,19 @@ function BuyFree()
 		if FinMul >0  then 
 			allUMul = allUMul + uMul
 		end 
-		if  FinMul >0 and normalMul + FinMul * (allUMul==0 and  1 or allUMul) > 300  then  --如果倍数超过300倍就空转出后面的都不中奖
+		local curallmul = 1
+		if uMul >0 then 
+			curallmul = allUMul
+		end 
+		if  FinMul >0 and normalMul + FinMul *curallmul  > 300  then  --如果倍数超过300倍就空转出后面的都不中奖
 
 		else
-			normalMul = normalMul + FinMul * (allUMul==0 and  1 or allUMul)
+			if uMul >0 then 
+				normalMul = normalMul + FinMul * (allUMul==0 and  1 or allUMul)
+			else 
+				normalMul = normalMul + FinMul 
+			end 
+			
 			cFreeNum = cFreeNum + 1
 			table.insert(allDisInfos, disInfos)
 			if sNum >= 3 then
@@ -138,10 +147,19 @@ function Free()
 		if FinMul >0  then 
 			allUMul = allUMul + uMul
 		end 
-		if  FinMul >0 and normalMul + FinMul * (allUMul==0 and 1 or allUMul) > 300  then  --如果倍数超过300倍就空转出后面的都不中奖
+		local curallmul = 1
+		if uMul >0 then 
+			curallmul = allUMul
+		end 
+		if  FinMul >0 and normalMul + FinMul *curallmul  > 300  then  --如果倍数超过300倍就空转出后面的都不中奖
 
 		else
-			normalMul = normalMul + FinMul * (allUMul==0 and  1 or allUMul)
+			if uMul >0 then 
+				normalMul = normalMul + FinMul * (allUMul==0 and  1 or allUMul)
+			else 
+				normalMul = normalMul + FinMul 
+			end 
+			
 			cFreeNum = cFreeNum + 1
 			table.insert(allDisInfos, disInfos)
 			if sNum >= 3 then
