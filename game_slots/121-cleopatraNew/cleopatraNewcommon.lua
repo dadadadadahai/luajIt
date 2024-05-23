@@ -4,7 +4,7 @@ LineNum = 1
 GameId = 121
 J = 100
 S = 70
--- CLEOPATRA
+-- cleopatraNew
 function Get(gameType, uid)
     local datainfos = unilight.getdata(Table, uid)
     if table.empty(datainfos) then
@@ -130,7 +130,7 @@ function Normal(gameId,gameType, betindex, datainfo, datainfos, uid)
         {type='normal',chessdata = result.chessdata,disInfo=result.disInfo,zmul =result.mulcfg.mul },
         result.jackpot
     )
-    BackpackMgr.GetRewardGood(datainfos._id, Const.GOODS_ID.GOLD,winScore+result.jackpotChips, Const.GOODS_SOURCE_TYPE.CLEOPATRANEW)
+    BackpackMgr.GetRewardGood(datainfos._id, Const.GOODS_ID.GOLD,winScore+result.jackpotChips, Const.GOODS_SOURCE_TYPE.cleopatraNew)
     unilight.update(Table, datainfos._id, datainfos)
     local boards={}
     table.insert(boards,result.chessdata)
@@ -163,7 +163,7 @@ function Free(gameId, gameType, datainfo,datainfos)
     datainfo.free.lackTimes = datainfo.free.lackTimes  -1
     datainfo.free.tWinScore = datainfo.free.tWinScore + winScore
     if datainfo.free.lackTimes<=0 then
-        BackpackMgr.GetRewardGood(datainfos._id, Const.GOODS_ID.GOLD,datainfo.free.tWinScore, Const.GOODS_SOURCE_TYPE.CLEOPATRANEW)
+        BackpackMgr.GetRewardGood(datainfos._id, Const.GOODS_ID.GOLD,datainfo.free.tWinScore, Const.GOODS_SOURCE_TYPE.cleopatraNew)
         print('tfreeWinScore',datainfo.free.tWinScore)
     end
     gameDetaillog.SaveDetailGameLog(
@@ -345,8 +345,8 @@ function CommonRotate(uid,gameId, gameType,isfree,datainfo)
     else
         if snum>=4 then
             datainfo.free = {
-                totalTimes = 15,
-                lackTimes = 15,
+                totalTimes = 5,
+                lackTimes = 5,
                 tWinScore = 0,
                 tMul = 0,
                 mulInfoList={},

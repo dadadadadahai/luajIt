@@ -13,6 +13,9 @@ function PlayNormalGame(dragonInfo,uid,betIndex,gameType)
     local betgold = betConfig[dragonInfo.betIndex]                                                      -- 单注下注金额
     local payScore = betgold * table_134_hanglie[1].linenum                                   -- 全部下注金额
     local jackpot = {}
+
+    -- 只有普通扣费 买免费触发的普通不扣费
+
     -- 扣除金额
     local _, ok = chessuserinfodb.WChipsChange(uid, Const.PACK_OP_TYPE.SUB, payScore, "生肖龙下注扣费")
     if ok == false then
@@ -22,14 +25,29 @@ function PlayNormalGame(dragonInfo,uid,betIndex,gameType)
         }
         return res
     end
+     
     dragonInfo.betMoney = payScore
     -- 生成普通棋盘和结果
     local resultGame,dragonInfo = gamecontrol.RealCommonRotate(uid,GameId,gameType,false,dragonInfo,dragonInfo.betMoney,GetBoards)
     -- 保存棋盘数据
     dragonInfo.boards = resultGame.boards
-    if resultGame.winScore > 0 then
+    -- 每一句初始化倍数
+   -- local mulList = {}
+   -- local sumMul = 1
+   -- -- 随机额外倍数
+    --local mul = table_134_normalMul[gamecommon.CommRandInt(table_134_normalMul, 'pro')].mul
+    --table.insert(mulList,mul)
+    --sumMul = mul
+    --winMul = winMul * sumMul
+    --extraData = {
+     --   mulList = dragonInfo.mulList,
+     --   sumMul = dragonInfo.sumMul,
+    --}
+    if resultGame.isFree == false and resultGame.winScore > 0 then
         -- 增加奖励
         BackpackMgr.GetRewardGood(uid, Const.GOODS_ID.GOLD, resultGame.winScore, Const.GOODS_SOURCE_TYPE.DRAGON)
+    elseif resultGame.isFree == true and resultGame.winScore > 0 then
+        dragonInfo.free.tWinScore = dragonInfo.free.tWinScore + resultGame.winScore       
     end
     -- 返回数据
     local res = GetResInfo(uid, dragonInfo, gameType, resultGame.tringerPoints)
@@ -40,11 +58,6 @@ function PlayNormalGame(dragonInfo,uid,betIndex,gameType)
     -- 保存数据库信息
     SaveGameInfo(uid,gameType,dragonInfo)
     -- 增加后台历史记录
-    local type = 'normal'
-    -- 如果中了免费模式
-    if not table.empty(dragonInfo.free) then
-        type = 'freeNormal'
-    end
     gameDetaillog.SaveDetailGameLog(
         uid,
         sTime,
@@ -54,7 +67,7 @@ function PlayNormalGame(dragonInfo,uid,betIndex,gameType)
         reschip,
         chessuserinfodb.RUserChipsGet(uid),
         0,
-        {type=type,chessdata = resultGame.boards},
+        {type='normal',chessdata = resultGame.boards},
         jackpot
     )
     return res

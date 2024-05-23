@@ -93,6 +93,7 @@ function main()
 	-- print('exist')
 	local gameModuleMap = {
 		[121] = cleopatraNew,
+		[126] = Fisherman,
 		[127] = Tiger,
 		[131] = GoldCow,
 		[132] = Rabbit,
@@ -126,10 +127,11 @@ function main()
 			FinMul = tostring(GetRealMul(FinMul,gameOj))
 			mulMap[FinMul] = mulMap[FinMul] or 0
 			if isCheckMul(gameOj, tmpimageType, FinMul) then
-				-- print('tmpimageType',tmpimageType,FinMul,cjson.encode(disInfos))
+			
 				mulMap[FinMul] = mulMap[FinMul] + 1
 				sys.saveToPool(TestGameId, tmpimageType, isGzip, tonumber(FinMul), disInfos)
 				rTimes = rTimes + 1
+				print('rTimes FinMul ',rTimes,FinMul)
 				if rTimes >= RunTimes then
 					break
 				end
@@ -142,12 +144,12 @@ end
 
 mulMap = {}
 roleMulMap = {}
-isGzip = 0
+isGzip = 1
 --循环次数
-RunTimes = 10200
+RunTimes = 1000
 --图库产生逻辑
 imageType =  1
-TestGameId = 160
+TestGameId = 162
 ischecked = false
 print('run start')
 main()

@@ -45,7 +45,7 @@ function CmdBuyHighBet(uid,msg)
     local gameType = msg.gameType
     local datainfo,datainfos = Get(gameType,uid)
     local res = BuyHighBet(msg.highLevel,datainfo,datainfos)
-    gamecommon.SendNet(uid, 'CleopatraNewBuyHighBetCmd_S', res)
+    gamecommon.SendNet(uid, 'cleopatraNewBuyHighBetCmd_S', res)
 end
 --注册消息解析
 function RegisterProto()

@@ -26,6 +26,7 @@ function PlayFreeGame(dragonInfo,uid,gameType)
     end
     res.winScore = resultGame.winScore
     res.winlines = resultGame.winlines
+    res.boards = {resultGame.boards}
     res.extraData = resultGame.extraData
     -- 增加后台历史记录
     gameDetaillog.SaveDetailGameLog(

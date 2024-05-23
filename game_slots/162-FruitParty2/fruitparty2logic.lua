@@ -46,8 +46,40 @@ function NormaltoFree()
     local sNum  = mulIconFunctionAndReChess_N(disInfos, disId)
     --对棋盘数据进行最终整理,计算最终mul
     local FinMul = arrangeToSave(disInfos)
+    local sMul =  calcSMul(sNum)
+	FinMul = FinMul + sMul
     return disInfos, FinMul
 end 
+function calcSMul(sNum)
+    if sNum==3 then
+        return 6
+    elseif sNum==4 then
+        return 10
+    elseif sNum==5 then
+        return 20
+	elseif sNum==6 then
+		return 40
+	elseif sNum==7 then
+		return 200
+    end
+    return 0
+end
+
+function CalcFreeNum(sNum)
+    if sNum==3 then
+        return 10
+    elseif sNum==4 then
+        return 12
+    elseif sNum==5 then
+        return 15
+	elseif sNum==6 then
+		return 20
+	elseif sNum==7 then
+		return 25
+    end
+    return 0
+end
+
 function BuyFree()
     --默认15次
     local tFreeNum =10
@@ -58,9 +90,10 @@ function BuyFree()
     local normalMul = 0
     local allDisInfos = {}
 	local NormaltoFreechessdata,NormaltoFreechessdataFinMul = NormaltoFree()
+	tFreeNum  = CalcFreeNum(get_sNum(NormaltoFreechessdata) )
 	table.insert(allDisInfos, NormaltoFreechessdata)
     while true do
-        local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_normalspin_1) --table_162_free_1
+        local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_free_1) --table_162_free_1
         iconRealId = 1
         fillCellToId(chessdata)
         --总消除数据，after触发免费后的数据
@@ -81,12 +114,13 @@ function BuyFree()
         local sNum = mulIconFunctionAndReChess(disInfos, disId, true)
         --对棋盘数据进行最终整理,计算棋盘mul
         local FinMul = arrangeToSave(disInfos)
-		if normalMul  > 300 and FinMul >0 then 
+		local sMul =  calcSMul(sNum)
+		if normalMul + FinMul + sMul > 300 and FinMul >0 then 
 
 
 
 		else
-			normalMul = normalMul + FinMul
+			normalMul = normalMul + FinMul + sMul
 			cFreeNum = cFreeNum + 1
 			table.insert(allDisInfos, disInfos)
 			if sNum >= 3 then
@@ -103,7 +137,7 @@ function BuyFree()
 end
 
 function Free()
-    --默认15次
+    --默认10次
     local tFreeNum =10
     local cFreeNum = 0
     --全部u图标累计
@@ -112,9 +146,10 @@ function Free()
     local normalMul = 0
     local allDisInfos = {}
 	local NormaltoFreechessdata,NormaltoFreechessdataFinMul = NormaltoFree()
+	tFreeNum  = CalcFreeNum(get_sNum(NormaltoFreechessdata) )
 	table.insert(allDisInfos, NormaltoFreechessdata)
     while true do
-        local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_normalspin_1) --table_162_free_1
+        local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_free_1) --table_162_free_1
         iconRealId = 1
         fillCellToId(chessdata)
         --总消除数据，after触发免费后的数据
@@ -135,12 +170,13 @@ function Free()
         local sNum = mulIconFunctionAndReChess(disInfos, disId, true)
         --对棋盘数据进行最终整理,计算棋盘mul
         local FinMul = arrangeToSave(disInfos)
-		if normalMul  > 300 and FinMul >0 then 
+		local sMul =  calcSMul(sNum)
+		if normalMul + FinMul > 300 and FinMul >0 then 
 
 
 
 		else
-			normalMul = normalMul + FinMul
+			normalMul = normalMul + FinMul +sMul
 			cFreeNum = cFreeNum + 1
 			table.insert(allDisInfos, disInfos)
 			if sNum >= 3 then
@@ -184,12 +220,13 @@ function Normal()
     local imageType = 1
     --对棋盘数据进行最终整理,计算最终mul
     local FinMul = arrangeToSave(disInfos)
-	if  check_is_to_free(disInfos) then --如果普通随机到图库就直接不进去
+	if  get_sNum(disInfos) >=3 then --如果普通随机到图库就直接不进去
 		imageType = 3
 	end
     return disInfos, FinMul, imageType
 end
-function check_is_to_free(disInfos)
+
+function   get_sNum(disInfos)
 	local chessdata = disInfos[#disInfos].chessdata --找到最后一幅图
 	local sNum = 0
 	for col = 1, #chessdata do
@@ -201,7 +238,7 @@ function check_is_to_free(disInfos)
 			end
 		end
 	end
-	return  sNum >= 4
+	return  sNum 
       
 end 
 --对数据进行整理保存
@@ -228,7 +265,7 @@ function mulIconFunctionAndReChess_N(disInfos, disId)
         end
     end
 	
-    local mulNum = 3
+    local mulNum = tmpPoolConfig[gamecommon.CommRandInt(tmpPoolConfig, 'gailv')].num
     local changeToMul = {} --Id To iconsAttachData
     local sNum = 0
     --按照消除棋盘位置留空
@@ -255,7 +292,9 @@ function mulIconFunctionAndReChess_N(disInfos, disId)
             table.insert(emptyPoses, emptyPos)
             lastIdMap = disInfo.iDMap
         end
-        for i = 1, mulNum do
+		local mass = mulNum - sNum
+		mass = mass <0 and 0 or mass
+        for i = 1, mass do
             --随机哪个棋盘
             if #emptyPoses <= 0 then
                 break
@@ -277,6 +316,7 @@ function mulIconFunctionAndReChess_N(disInfos, disId)
                     local oldId = disInfos[boardIndex].chessdata[col][row].Id
                     local uIcon = { Id = iconRealId, val = 70, mul = 0 }
                     iconRealId = iconRealId + 1
+					sNum = sNum + 1
                     addUIconToChess(disInfos, boardIndex, oldId, uIcon)
                 else
                     table.remove(emptyPoses, boardIndex)
@@ -288,7 +328,7 @@ function mulIconFunctionAndReChess_N(disInfos, disId)
 end
 --进行倍数图标处理,棋盘还原
 function mulIconFunctionAndReChess(disInfos, disId, isFree)
-    local sNum = 0, 0
+    local sNum = 0
     --按照消除棋盘位置留空
 	local emptyPoses = {}
 	for index, disInfo in ipairs(disInfos) do
@@ -304,7 +344,7 @@ function mulIconFunctionAndReChess(disInfos, disId, isFree)
 					table.insert(emptyPos, { col, row })
 					disId[Id] = 1
 				end
-				if val == 70 then
+				if    val == 70 then
 					sNum = sNum + 1
 				end
 			end
@@ -368,7 +408,7 @@ function chessdataHandle(chessdata, lastColRow, disId, isFree)
 		
         local spin = table_162_normalspin_1
         if isFree then
-            spin = table_162_normalspin_1 --table_162_free_1
+            spin = table_162_free_1
         end
         --棋盘重新填充处理
         reChessHandle(lastColRow, spin, chessdata,isFree)
@@ -539,7 +579,7 @@ local function findMatches(board)
         for j = 1, COLS do
 			if not board[i][j].use and board[i][j].val ~= 90  then 
 				if i == 3 then
-		local a= 1
+				local a= 1
 				end 
 				local  positions = checkAdjacent(i, j,board,board[i][j].val)
 				if #positions >= 5  then
@@ -580,8 +620,10 @@ function getDisMul(disInfo)
 							end 
 						end 
 					end
-					
-                    table.insert(disInfo.dis, {ele = curele,num=num,mul = table_162_paytable[key]['c' .. mulIndex]+Wmul,data=data})
+					if Wmul ==0 then 
+						Wmul = 1
+					end 
+                    table.insert(disInfo.dis, {ele = curele,num=num,mul = table_162_paytable[key]['c' .. mulIndex]*Wmul,data=data})
                     break
                 end
             end
@@ -620,16 +662,4 @@ function printchessdata(chessdata)
         end
         print(rowstr)
     end
-end
-function calcSMul(sNum)
-    if sNum==4 then
-        return 5
-    elseif sNum==5 then
-        return 10
-    elseif sNum==6 then
-        return 20
-    elseif sNum==7 then
-        return 100
-    end
-    return 0
 end

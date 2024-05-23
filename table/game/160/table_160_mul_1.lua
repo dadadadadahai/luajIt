@@ -1,4 +1,4 @@
--- 自动生成 ./excel/game/121/RTP100.xlsx(table_121_mul_1)
+-- 自动生成 ./excel/game/160/RTP100.xlsx(table_160_mul_1)
 return {
 
     [1] = {
@@ -169,28 +169,6 @@ return {
         mul = 100,
     },
 
-    [15] = {
-        ID = 15,
-        gailv100 = 1,
-        gailv150 = 1,
-        gailv200 = 1,
-        gailv50 = 1,
-        gailv75 = 1,
-        gailvfree = 1,
-        iconid = 104,
-        mul = 250,
-    },
 
-    [16] = {
-        ID = 16,
-        gailv100 = 1,
-        gailv150 = 1,
-        gailv200 = 1,
-        gailv50 = 1,
-        gailv75 = 1,
-        gailvfree = 1,
-        iconid = 104,
-        mul = 500,
-    },
 
 }
