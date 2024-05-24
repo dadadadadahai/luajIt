@@ -397,10 +397,7 @@ function chessdataHandle(chessdata, lastColRow, disId, isFree)
         end
 		
 		--先填充
-		if isFree then 
-			reChessHandle_W(chessdata,disInfo.winfo)
-		end 
-		
+		reChessHandle_W(chessdata,disInfo.winfo,isFree)
         --zero下落处理
         for col = 1, #chessdata do
             dropFillZero(chessdata[col])
@@ -419,7 +416,7 @@ function chessdataHandle(chessdata, lastColRow, disId, isFree)
     return disInfo, chessdata
 end
 --先填充W
-function reChessHandle_W(chessdata,winfo)
+function reChessHandle_W(chessdata,winfo,isFree)
 	local Freecol = 0 
 	local coltable = {}
 	local randcol = {}
@@ -438,12 +435,23 @@ function reChessHandle_W(chessdata,winfo)
 	for col = 1, #chessdata do
         for row = 1, #chessdata[col] do
             if Freecol ~= 0 and Freecol == col and   chessdata[col][row] == 0 then	
-				local robj = table_162_mul_1[gamecommon.CommRandInt(table_162_mul_1, 'gailvfree')]
-				local uIcon = { Id = iconRealId, val = robj.iconid, mul = robj.mul }
-				chessdata[col][row] = uIcon 
-				iconRealId = iconRealId + 1
-				table.insert(winfo,{ Id = iconRealId, val = robj.iconid, mul = robj.mul,coordinate={col,row}})
-				break
+				if isFree then 
+					local robj = table_162_mul_1[gamecommon.CommRandInt(table_162_mul_1, 'gailvfree')]
+					local uIcon = { Id = iconRealId, val = robj.iconid, mul = robj.mul }
+					chessdata[col][row] = uIcon 
+					iconRealId = iconRealId + 1
+					table.insert(winfo,{ Id = iconRealId, val = robj.iconid, mul = robj.mul,coordinate={col,row}})
+					break
+				else 
+					if table_162_mul_3[gamecommon.CommRandInt(table_162_mul_3, 'gailvfree')].mul ~=0 then 
+						local robj = table_162_mul_2[gamecommon.CommRandInt(table_162_mul_2, 'gailvfree')]
+						local uIcon = { Id = iconRealId, val = robj.iconid, mul = robj.mul }
+						chessdata[col][row] = uIcon 
+						iconRealId = iconRealId + 1
+						table.insert(winfo,{ Id = iconRealId, val = robj.iconid, mul = robj.mul,coordinate={col,row}})
+						break
+					end 
+				end 
             end
         end
 	end 
@@ -600,7 +608,15 @@ function getDisMul(disInfo)
 	local chessdata = disInfo.chessdata
 	local matchese = findMatches(chessdata)
 	--data 可以消除的坐标
-    for key, data in pairs(matchese) do
+    for _, data in pairs(matchese) do
+		local key = 1
+		for _,v in ipairs(data) do
+			local chessman = chessdata[v[1]][v[2]]
+			if chessman.val ~= 90 then 
+				key =  chessman.val
+				break
+			end 
+		end
 		local num = #data 
         for i = #disNums, 1, -1 do
             if num >= disNums[i] then
@@ -609,21 +625,16 @@ function getDisMul(disInfo)
                     --可以消除
 					--遍历看看有没有90的
 					local Wmul = 0
-					local curele= 0
 					for _,v in ipairs(data) do
 						local chessman = chessdata[v[1]][v[2]]
 						if chessman.val == 90 then 
 							Wmul= Wmul + chessman.mul
-						else 
-							if curele == 0 then 
-								curele =  chessman.val
-							end 
 						end 
 					end
 					if Wmul ==0 then 
 						Wmul = 1
 					end 
-                    table.insert(disInfo.dis, {ele = curele,num=num,mul = table_162_paytable[key]['c' .. mulIndex]*Wmul,data=data})
+                    table.insert(disInfo.dis, {ele = key,num=num,mul = table_162_paytable[key]['c' .. mulIndex]*Wmul,data=data})
                     break
                 end
             end
