@@ -3,19 +3,19 @@ return {
 
     [1] = {
         ID = 1,
-        mul = 2,
+        mul = 1,
         pro = 6450,
     },
 
     [2] = {
         ID = 2,
-        mul = 5,
+        mul = 2,
         pro = 3000,
     },
 
     [3] = {
         ID = 3,
-        mul = 10,
+        mul = 5,
         pro = 500,
     },
 

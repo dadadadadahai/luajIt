@@ -3,56 +3,56 @@ return {
 
     [1] = {
         ID = 1,
+        des = "Y",
         gailv = 9500,
-        icon = "Y",
         iconId = 100,
         mul = 0,
     },
 
     [2] = {
         ID = 2,
+        des = "U1",
         gailv = 210,
-        icon = "U1",
         iconId = 81,
         mul = 1,
     },
 
     [3] = {
         ID = 3,
+        des = "U2",
         gailv = 100,
-        icon = "U2",
         iconId = 82,
         mul = 0,
     },
 
     [4] = {
         ID = 4,
+        des = "Z(2倍)",
         gailv = 100,
-        icon = "Z(2倍)",
         iconId = 101,
         mul = 2,
     },
 
     [5] = {
         ID = 5,
+        des = "Z(3倍)",
         gailv = 50,
-        icon = "Z(3倍)",
         iconId = 101,
         mul = 3,
     },
 
     [6] = {
         ID = 6,
+        des = "Z(4倍)",
         gailv = 30,
-        icon = "Z(4倍)",
         iconId = 101,
         mul = 4,
     },
 
     [7] = {
         ID = 7,
+        des = "Z(5倍)",
         gailv = 10,
-        icon = "Z(5倍)",
         iconId = 101,
         mul = 5,
     },

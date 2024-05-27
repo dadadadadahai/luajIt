@@ -13,7 +13,7 @@ return {
 
     [2] = {
         ID = 2,
-        limit1 = 100,
+        limit1 = 10,
         limit2 = 22,
         limit3 = 22,
         type1 = 2.5,
@@ -23,7 +23,7 @@ return {
 
     [3] = {
         ID = 3,
-        limit1 = 50,
+        limit1 = 2,
         limit2 = 1,
         limit3 = 1,
         type1 = 10.0,
@@ -33,7 +33,7 @@ return {
 
     [4] = {
         ID = 4,
-        limit1 = 20,
+        limit1 = 10,
         limit2 = 1,
         limit3 = 1,
         type1 = 12.5,
@@ -43,7 +43,7 @@ return {
 
     [5] = {
         ID = 5,
-        limit1 = 20,
+        limit1 = 2,
         limit2 = 1,
         limit3 = 1,
         type1 = 25.0,
@@ -53,7 +53,7 @@ return {
 
     [6] = {
         ID = 6,
-        limit1 = 20,
+        limit1 = 2,
         limit2 = -1,
         limit3 = -1,
         type1 = 30.0,
@@ -63,7 +63,7 @@ return {
 
     [7] = {
         ID = 7,
-        limit1 = 10,
+        limit1 = 2,
         limit2 = -1,
         limit3 = -1,
         type1 = 50.0,
@@ -73,7 +73,7 @@ return {
 
     [8] = {
         ID = 8,
-        limit1 = 10,
+        limit1 = 2,
         limit2 = -1,
         limit3 = -1,
         type1 = 55.0,
@@ -83,20 +83,20 @@ return {
 
     [9] = {
         ID = 9,
-        limit1 = 10,
+        limit1 = 2,
         limit2 = -1,
         limit3 = -1,
-        type1 = 75.0,
+        type1 = 105.0,
         type2 = -1.0,
         type3 = -1.0,
     },
 
     [10] = {
         ID = 10,
-        limit1 = 10,
+        limit1 = 1,
         limit2 = -1,
         limit3 = -1,
-        type1 = 100.0,
+        type1 = 200.0,
         type2 = -1.0,
         type3 = -1.0,
     },

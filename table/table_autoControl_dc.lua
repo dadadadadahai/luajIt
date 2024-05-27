@@ -10,42 +10,42 @@ return {
     [2] = {
         ID = 2,
         chargeLimit = 1001,
-        chargeMax = 3000,
+        chargeMax = 2000,
     },
 
     [3] = {
         ID = 3,
-        chargeLimit = 3001,
-        chargeMax = 5000,
+        chargeLimit = 2001,
+        chargeMax = 3000,
     },
 
     [4] = {
         ID = 4,
-        chargeLimit = 5001,
-        chargeMax = 7000,
+        chargeLimit = 3001,
+        chargeMax = 4000,
     },
 
     [5] = {
         ID = 5,
-        chargeLimit = 7001,
-        chargeMax = 9000,
+        chargeLimit = 4001,
+        chargeMax = 6000,
     },
 
     [6] = {
         ID = 6,
-        chargeLimit = 9001,
-        chargeMax = 11000,
+        chargeLimit = 6001,
+        chargeMax = 10000,
     },
 
     [7] = {
         ID = 7,
-        chargeLimit = 11001,
-        chargeMax = 13000,
+        chargeLimit = 10001,
+        chargeMax = 12000,
     },
 
     [8] = {
         ID = 8,
-        chargeLimit = 13001,
+        chargeLimit = 12001,
         chargeMax = 15000,
     },
 

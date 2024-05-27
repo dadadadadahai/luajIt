@@ -123,13 +123,16 @@ function main()
 	while true do
 		-- print('loop start')
 		local disInfos, FinMul, tmpimageType = gameOj.StartToImagePool(imageType)
+		if FinMul == 0 then 
+			local a = 0
+		end 
 		if tmpimageType == imageType or imageType == 0 then
 			FinMul = tostring(GetRealMul(FinMul,gameOj))
 			mulMap[FinMul] = mulMap[FinMul] or 0
 			if isCheckMul(gameOj, tmpimageType, FinMul) then
 			
 				mulMap[FinMul] = mulMap[FinMul] + 1
-				sys.saveToPool(TestGameId, tmpimageType, isGzip, tonumber(FinMul), disInfos)
+				--sys.saveToPool(TestGameId, tmpimageType, isGzip, tonumber(FinMul), disInfos)
 				rTimes = rTimes + 1
 				print('rTimes FinMul ',rTimes,FinMul)
 				if rTimes >= RunTimes then
@@ -146,10 +149,10 @@ mulMap = {}
 roleMulMap = {}
 isGzip = 1
 --循环次数
-RunTimes = 190000
+RunTimes = 10000
 --图库产生逻辑
-imageType =  1
-TestGameId = 162
+imageType =  2
+TestGameId = 121
 ischecked = false
 print('run start')
 main()

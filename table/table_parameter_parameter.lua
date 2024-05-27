@@ -118,18 +118,18 @@ return {
     [19] = {
         ID = 19,
         Parameter = 100,
-        desc = "初级场最高倍数",
+        desc = "转轴游戏最高倍数",
     },
 
     [20] = {
         ID = 20,
-        Parameter = 100,
-        desc = "中级场最高倍数",
+        Parameter = 100000,
+        desc = "图库游戏最高倍数",
     },
 
     [21] = {
         ID = 21,
-        Parameter = 100,
+        Parameter = 100000,
         desc = "高级场最高倍数",
     },
 
@@ -201,7 +201,7 @@ return {
 
     [33] = {
         ID = 33,
-        Parameter = 500,
+        Parameter = 300,
         desc = "登录akp赠送金币",
     },
 
@@ -219,7 +219,7 @@ return {
 
     [36] = {
         ID = 36,
-        Parameter = 300000,
+        Parameter = 500000,
         desc = "单局最高中奖金额",
     },
 

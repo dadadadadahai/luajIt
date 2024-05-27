@@ -183,8 +183,10 @@ return {
 
     [21] = {
         ID = 21,
-        content = "Saque de R$%s com sucesso",
-        desc = "成功提现R$%s",
+        content = [=[Número do pedido: %s.
+Seu saque de R$%s foi realizado com sucesso.]=],
+        desc = [=[订单号：342343423434。
+您提取的R$%s成功。]=],
         icon = "",
         limitTime = 7776000,
         subject = "",
@@ -192,8 +194,10 @@ return {
 
     [22] = {
         ID = 22,
-        content = "O saque de R$%s falhou e o valor foi devolvido. Verifique se a conta receptora está correta.",
-        desc = "提现R$%s失败，金额已退回，请检查收款账户是否正确。",
+        content = [=[Número do pedido: %s.
+Sua solicitação de saque de R$%s falhou e o valor foi reembolsado. Por favor, verifique se a conta de recebimento está correta.]=],
+        desc = [=[订单号：342343423434。
+您提取的R$%s失败，金额已退回，请检查收款账户是否正确。]=],
         icon = "",
         limitTime = 604800,
         subject = "",
@@ -393,8 +397,9 @@ return {
 
     [44] = {
         ID = 44,
-        content = "A solicitação de saque está sendo processada e o valor será liberado em sua conta dentro de 1 a 60 minutos.",
-        desc = "提现请求正在处理中，金额将在1~60分钟内发放到你的账户。",
+        content = "Número do pedido de saque: %s. Seu pedido de saque está em processamento e o valor de R$%s que você solicitou será creditado em sua conta dentro de 1 a 60 minutos.",
+        desc = [=[提现订单号：54589789448。
+您的提现请求正在处理中，您提取的R$5将在1~60分钟内发放到你的账户。]=],
         icon = "",
         limitTime = 7776000,
         subject = "",
@@ -402,10 +407,8 @@ return {
 
     [45] = {
         ID = 45,
-        content = [=[Oferta de bônus especial para 20 usuários sortudos!!! %s.
-Os jogadores acima são todos usuários sortudos do 9kbet.com! As recompensas em dinheiro foram enviadas automaticamente para sua conta]=],
-        desc = [=[20位幸运用户的特别奖励！！！%s
-以上玩家均为9kbet.com的幸运用户！ 现金奖励已自动发送至您的帐户]=],
+        content = "Parabéns! Você recebeu um prêmio de jogador sortudo no valor de R$%s!",
+        desc = "恭喜你获得了R$%s的幸运玩家的奖励！",
         icon = "",
         limitTime = 7776000,
         subject = "",
@@ -424,6 +427,24 @@ Os jogadores acima são todos usuários sortudos do 9kbet.com! As recompensas em
         ID = 47,
         content = "Ganhe R$%s via Sorteio",
         desc = "通过Sorteio领取R$5",
+        icon = "",
+        limitTime = 7776000,
+        subject = "",
+    },
+
+    [48] = {
+        ID = 48,
+        content = "Parabéns por ganhar R$%s",
+        desc = "恭喜你获得了R$%s",
+        icon = "",
+        limitTime = 7776000,
+        subject = "",
+    },
+
+    [49] = {
+        ID = 49,
+        content = "Parabéns! Você recebeu um prêmio de agente sortudo no valor de R$%s!",
+        desc = "恭喜你获得了R$%s的幸运代理的奖励！",
         icon = "",
         limitTime = 7776000,
         subject = "",

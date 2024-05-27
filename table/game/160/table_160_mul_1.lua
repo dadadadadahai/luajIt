@@ -169,6 +169,28 @@ return {
         mul = 100,
     },
 
+    [15] = {
+        ID = 15,
+        gailv100 = 1,
+        gailv150 = 1,
+        gailv200 = 1,
+        gailv50 = 1,
+        gailv75 = 1,
+        gailvfree = 1,
+        iconid = 104,
+        mul = 250,
+    },
 
+    [16] = {
+        ID = 16,
+        gailv100 = 1,
+        gailv150 = 1,
+        gailv200 = 1,
+        gailv50 = 1,
+        gailv75 = 1,
+        gailvfree = 1,
+        iconid = 104,
+        mul = 500,
+    },
 
 }

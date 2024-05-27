@@ -6,7 +6,7 @@ return {
         desc = "不中",
         iconId = 1000,
         mul = 0,
-        pro = 5150,
+        pro = 5400,
     },
 
     [2] = {
@@ -38,7 +38,7 @@ return {
         desc = "$+",
         iconId = 84,
         mul = 3,
-        pro = 1500,
+        pro = 1000,
     },
 
     [6] = {
@@ -54,7 +54,7 @@ return {
         desc = "RESPIN",
         iconId = 86,
         mul = 0,
-        pro = 50,
+        pro = 300,
     },
 
 }

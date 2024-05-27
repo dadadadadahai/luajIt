@@ -3,26 +3,26 @@ return {
 
     [1] = {
         ID = 1,
-        endTime = 39599,
-        startTime = 36000,
+        endTime = 7199,
+        startTime = 3600,
     },
 
     [2] = {
         ID = 2,
-        endTime = 61199,
-        startTime = 57600,
+        endTime = 21599,
+        startTime = 18000,
     },
 
     [3] = {
         ID = 3,
-        endTime = 68399,
-        startTime = 64800,
+        endTime = 28799,
+        startTime = 25200,
     },
 
     [4] = {
         ID = 4,
-        endTime = 75599,
-        startTime = 72000,
+        endTime = 86399,
+        startTime = 82800,
     },
 
 }
