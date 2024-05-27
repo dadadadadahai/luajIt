@@ -132,7 +132,7 @@ function main()
 			if isCheckMul(gameOj, tmpimageType, FinMul) then
 			
 				mulMap[FinMul] = mulMap[FinMul] + 1
-				--sys.saveToPool(TestGameId, tmpimageType, isGzip, tonumber(FinMul), disInfos)
+				sys.saveToPool(TestGameId, tmpimageType, isGzip, tonumber(FinMul), disInfos)
 				rTimes = rTimes + 1
 				print('rTimes FinMul ',rTimes,FinMul)
 				if rTimes >= RunTimes then
@@ -149,10 +149,10 @@ mulMap = {}
 roleMulMap = {}
 isGzip = 1
 --循环次数
-RunTimes = 10000
+RunTimes = 25000
 --图库产生逻辑
-imageType =  2
-TestGameId = 121
+imageType =  3
+TestGameId = 162
 ischecked = false
 print('run start')
 main()

@@ -4,6 +4,8 @@ local cols = { 7, 7, 7, 7, 7, 7, 7 }
 -- 定义棋盘大小
 local ROWS = 7
 local COLS = 7
+local S= 70
+local W = 90
 
 function StartToImagePool(imageType)
      if imageType == 1 then
@@ -25,7 +27,7 @@ local GetDisinfoMul=function(disInfo)
 end
 function NormaltoFree()
 
-    --table_162_normalspin_1
+   
     local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_normalspin_1)
     iconRealId = 1
     --棋盘进行id预处理
@@ -149,7 +151,7 @@ function Free()
 	tFreeNum  = CalcFreeNum(get_sNum(NormaltoFreechessdata) )
 	table.insert(allDisInfos, NormaltoFreechessdata)
     while true do
-        local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_free_1) --table_162_free_1
+        local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_free_1) 
         iconRealId = 1
         fillCellToId(chessdata)
         --总消除数据，after触发免费后的数据
@@ -193,7 +195,7 @@ function Free()
 end
 
 function Normal()
-    --table_162_normalspin_1
+
     local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_normalspin_1)
     iconRealId = 1
 	--[[chessdata = {
@@ -376,6 +378,7 @@ function chessdataHandle(chessdata, lastColRow, disId, isFree)
     --进行是否可消除判断
     getDisMul(disInfo)
     --记录Id将消除位置变为0
+	local Wallele = {}  --已经消除的有W的相关信息
     if #disInfo.dis > 0 then
         for _, value in ipairs(disInfo.dis) do
 			for _, coordinate in ipairs(value.data ) do
@@ -383,10 +386,14 @@ function chessdataHandle(chessdata, lastColRow, disId, isFree)
 					local  row =  coordinate[2]
                     if chessdata[col][row] ~= 0 then
                         local val = chessdata[col][row].val
+						local mul =  chessdata[col][row].mul
                         if value.ele == val or  val == 90  then
                             local Id = chessdata[col][row].Id
                             disId[Id] = 1
                             chessdata[col][row] = 0
+							if val == 90 then
+								table.insert(Wallele,{mul = mul ,data =value.data })
+							end 
 						else
 							print("!!!!!!!!!!!!!!!")
                         end
@@ -397,7 +404,7 @@ function chessdataHandle(chessdata, lastColRow, disId, isFree)
         end
 		
 		--先填充
-		reChessHandle_W(chessdata,disInfo.winfo,isFree)
+		reChessHandle_W(chessdata,disInfo.winfo,isFree,Wallele)
         --zero下落处理
         for col = 1, #chessdata do
             dropFillZero(chessdata[col])
@@ -416,41 +423,100 @@ function chessdataHandle(chessdata, lastColRow, disId, isFree)
     return disInfo, chessdata
 end
 --先填充W
-function reChessHandle_W(chessdata,winfo,isFree)
+function reChessHandle_W(chessdata,winfo,isFree,Wallele)
 	local Freecol = 0 
 	local coltable = {}
 	local randcol = {}
-	for col = 1, #chessdata do
-		for row = 1, #chessdata[col] do
-			if chessdata[col][row] == 0 then
-				if not coltable[col] then 
-					coltable[col] = true
-					table.insert(randcol,col)
-				end 
-				
+	local mul = 0
+	if table.empty(Wallele) then 
+		for col = 1, #chessdata do
+			for row = 1, #chessdata[col] do
+				if chessdata[col][row] == 0 then
+					if not coltable[col] then 
+						coltable[col] = true
+						table.insert(randcol,col)
+					end 
+					
+				end
 			end
-		end
+		end 
+		Freecol = randcol[math.random(#randcol)]
+	else 
+		local key,curWallele = table.choice(Wallele)
+		if  key then 
+			mul = curWallele.mul
+			for i, coordinate in ipairs(curWallele.data ) do
+				local   col = coordinate[1]
+				local  row =  coordinate[2]
+                if chessdata[col][row] == 0 then
+					if not coltable[col] then 
+						coltable[col] = true
+						randcol = randcol or {}
+						table.insert(randcol,col)
+					end 
+				end 
+			end 
+			Freecol = randcol[math.random(#randcol)]
+		else 
+			local a = 1
+            for col = 1, #chessdata do
+			    for row = 1, #chessdata[col] do
+					if chessdata[col][row] == 0 then
+						if not coltable[col] then 
+							coltable[col] = true
+							table.insert(randcol,col)
+						end 
+						
+					end
+				end
+			end 
+			Freecol = randcol[math.random(#randcol)]
+		end 
 	end 
-	Freecol = randcol[math.random(#randcol)]
+	
 	for col = 1, #chessdata do
         for row = 1, #chessdata[col] do
             if Freecol ~= 0 and Freecol == col and   chessdata[col][row] == 0 then	
 				if isFree then 
-					local robj = table_162_mul_1[gamecommon.CommRandInt(table_162_mul_1, 'gailvfree')]
-					local uIcon = { Id = iconRealId, val = robj.iconid, mul = robj.mul }
-					chessdata[col][row] = uIcon 
-					iconRealId = iconRealId + 1
-					table.insert(winfo,{ Id = iconRealId, val = robj.iconid, mul = robj.mul,coordinate={col,row}})
-					break
+					if mul == 0 then 
+						local robj = table_162_mul_1[1]
+						if math.random(10000) <=robj.gailvfree then 
+							local uIcon = { Id = iconRealId, val = robj.iconid, mul = robj.mul }
+							chessdata[col][row] = uIcon 
+							iconRealId = iconRealId + 1
+							table.insert(winfo,{ Id = iconRealId, val = robj.iconid, mul = robj.mul,coordinate={col,row}})
+							break
+						end 
+					else 
+						local  _,robj =  table.find(table_162_mul_1,function(v,k) return v.mul == mul * 3 end )
+						if math.random(10000) <=robj.gailvfree then 
+							local uIcon = { Id = iconRealId, val = robj.iconid, mul = robj.mul }
+							chessdata[col][row] = uIcon 
+							iconRealId = iconRealId + 1
+							table.insert(winfo,{ Id = iconRealId, val = robj.iconid, mul = robj.mul,coordinate={col,row}})
+							break
+						end 
+					end 	
 				else 
-					if table_162_mul_3[gamecommon.CommRandInt(table_162_mul_3, 'gailvfree')].mul ~=0 then 
-						local robj = table_162_mul_2[gamecommon.CommRandInt(table_162_mul_2, 'gailvfree')]
-						local uIcon = { Id = iconRealId, val = robj.iconid, mul = robj.mul }
-						chessdata[col][row] = uIcon 
-						iconRealId = iconRealId + 1
-						table.insert(winfo,{ Id = iconRealId, val = robj.iconid, mul = robj.mul,coordinate={col,row}})
-						break
-					end 
+					if mul == 0 then 
+						local robj = table_162_mul_2[1]
+						if math.random(10000) <=robj.gailvfree then 
+							local uIcon = { Id = iconRealId, val = robj.iconid, mul = robj.mul }
+							chessdata[col][row] = uIcon 
+							iconRealId = iconRealId + 1
+							table.insert(winfo,{ Id = iconRealId, val = robj.iconid, mul = robj.mul,coordinate={col,row}})
+							break
+						end 
+					else 
+						local  _,robj =  table.find(table_162_mul_2,function(v,k) return v.mul == mul * 2 end )
+						if math.random(10000) <=robj.gailvfree then 
+							local uIcon = { Id = iconRealId, val = robj.iconid, mul = robj.mul }
+							chessdata[col][row] = uIcon 
+							iconRealId = iconRealId + 1
+							table.insert(winfo,{ Id = iconRealId, val = robj.iconid, mul = robj.mul,coordinate={col,row}})
+							break
+						end 
+					end 	
 				end 
             end
         end
@@ -474,7 +540,7 @@ function reChessHandle(lastColRow, spin, chessdata,isFree)
     end
 end
 
-function dropFillZero(data,winfo)
+function dropFillZero(data)
     local dlen = #data
     for i = 1, dlen do
         if data[i] == 0 then
