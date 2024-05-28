@@ -8,16 +8,48 @@ local S= 70
 local W = 90
 
 function StartToImagePool(imageType)
+	 local  D, M, T
      if imageType == 1 then
-        return Normal()
+         D, M, T =  Normal()
     elseif imageType == 2 then
         --跑免费图库
-        return BuyFree()
+         D, M, T=  BuyFree()
+		if T == 2 then 
+			M = tonumber(string.format("%.2f", M))
+			local curM = tonumber(string.format("%.2f",calcALLMul(D)))
+			if  curM ~= M then 
+				print("curM ",type(curM) )
+				print("M ",type(M) )
+				print("curM"..curM .."!= "..M )
+				
+				
+				return D, M, 5
+			end 
+		end 
 	elseif imageType ==3 then
 	--跑免费图库
-		return Free()
+		 D, M, T =  Free()
+		if T == 3 then 
+			M = tonumber(string.format("%.2f", M))
+			local curM = tonumber(string.format("%.2f",calcALLMul(D)))
+			if  curM ~= M then 
+				print("curM ",type(curM) )
+				print("M ",type(M) )
+				print("curM"..curM .."!= "..M )
+				return D, M, 5
+			end 
+		end
     end
+
+	return D, M, T
 end
+function calcALLMul(D)
+	local curM = 0
+	for i,v in pairs(D) do
+		curM=curM + tonumber(string.format("%.2f",v.sMul))  + tonumber(string.format("%.2f", v.FinMul)) 
+	end
+	return curM
+end 
 local GetDisinfoMul=function(disInfo)
 	local mul = 0
 	for _,value in ipairs(disInfo) do
@@ -26,29 +58,26 @@ local GetDisinfoMul=function(disInfo)
 	return mul
 end
 function NormaltoFree()
-
-   
     local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_normalspin_1)
     iconRealId = 1
     --棋盘进行id预处理
     fillCellToId(chessdata)
     --总消除数据，after触发免费后的数据
-    local disInfos = {}
+    local disInfos = {b={}}
     local disId = {}
-    local disInfo, tchessdata = chessdataHandle(chessdata, lastColRow, disId)
-    table.insert(disInfos, disInfo)
-    local mul = GetDisinfoMul(disInfo)
-    while table.empty(disInfo.dis) == false and mul<=300 do
-        disInfo, tchessdata = chessdataHandle(tchessdata, lastColRow, disId)
-        mul = mul + GetDisinfoMul(disInfo)
-        table.insert(disInfos, disInfo)
+    local disInfo, tchessdata = chessdataHandle(chessdata, lastColRow, disId,false)
+    table.insert(disInfos.b, disInfo)
+    while table.empty(disInfo.dis) == false  do
+        disInfo, tchessdata = chessdataHandle(tchessdata, lastColRow, disId,false)
+        table.insert(disInfos.b, disInfo)
     end
-    local mul = 0
     --进行倍数图标处理,统计s个数,倍数图标返回倍数
-    local sNum  = mulIconFunctionAndReChess_N(disInfos, disId)
+    local sNum  = mulIconFunctionAndReChess_N(disInfos.b, disId)
     --对棋盘数据进行最终整理,计算最终mul
-    local FinMul = arrangeToSave(disInfos)
+    local FinMul = arrangeToSave(disInfos.b)
     local sMul =  calcSMul(sNum)
+	disInfos.sMul =sMul
+	disInfos.FinMul = FinMul
 	FinMul = FinMul + sMul
     return disInfos, FinMul
 end 
@@ -92,7 +121,11 @@ function BuyFree()
     local normalMul = 0
     local allDisInfos = {}
 	local NormaltoFreechessdata,NormaltoFreechessdataFinMul = NormaltoFree()
-	tFreeNum  = CalcFreeNum(get_sNum(NormaltoFreechessdata) )
+	local mul = NormaltoFreechessdataFinMul
+	tFreeNum  = CalcFreeNum(get_sNum(NormaltoFreechessdata.b) )
+	if tFreeNum == 0 then 
+		return allDisInfos, mul, 5
+	end 
 	table.insert(allDisInfos, NormaltoFreechessdata)
     while true do
         local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_free_1) --table_162_free_1
@@ -100,23 +133,26 @@ function BuyFree()
         fillCellToId(chessdata)
         --总消除数据，after触发免费后的数据
         --一次棋盘消除数据
-        local disInfos = {  }
+        local disInfos = {b={}  }
         local disId = {}
 		--printchessdata(chessdata)
         local disInfo, tchessdata = chessdataHandle(chessdata, lastColRow, disId, true)
 	--	printchessdata(tchessdata)
-        table.insert(disInfos, disInfo)
+        table.insert(disInfos.b, disInfo)
         while table.empty(disInfo.dis) == false do
             disInfo, tchessdata = chessdataHandle(tchessdata, lastColRow, disId, true)
 		--	printchessdata(tchessdata)
-            table.insert(disInfos, disInfo)
+            table.insert(disInfos.b, disInfo)
         end
  
         --进行倍数图标处理,统计s个数,倍数图标返回倍数
-        local sNum = mulIconFunctionAndReChess(disInfos, disId, true)
+          mulIconFunctionAndReChess(disInfos.b, disId, true)
         --对棋盘数据进行最终整理,计算棋盘mul
-        local FinMul = arrangeToSave(disInfos)
+        local FinMul = arrangeToSave(disInfos.b)
+		local sNum  =  get_sNum(disInfos.b)
 		local sMul =  calcSMul(sNum)
+		disInfos.sMul =sMul
+		disInfos.FinMul = FinMul
 		if normalMul + FinMul + sMul > 300 and FinMul >0 then 
 
 
@@ -134,7 +170,7 @@ function BuyFree()
         end
     end
     --进行最终倍数计算
-    local mul = normalMul +NormaltoFreechessdataFinMul
+     mul = mul+ normalMul 
     return allDisInfos, mul, 2
 end
 
@@ -148,7 +184,11 @@ function Free()
     local normalMul = 0
     local allDisInfos = {}
 	local NormaltoFreechessdata,NormaltoFreechessdataFinMul = NormaltoFree()
-	tFreeNum  = CalcFreeNum(get_sNum(NormaltoFreechessdata) )
+	local mul = NormaltoFreechessdataFinMul
+	tFreeNum  = CalcFreeNum(get_sNum(NormaltoFreechessdata.b) )
+	if tFreeNum == 0 then 
+		return allDisInfos, mul, 5
+	end 
 	table.insert(allDisInfos, NormaltoFreechessdata)
     while true do
         local chessdata, lastColRow = gamecommon.CreateSpecialChessData(cols, table_162_free_1) 
@@ -156,24 +196,27 @@ function Free()
         fillCellToId(chessdata)
         --总消除数据，after触发免费后的数据
         --一次棋盘消除数据
-        local disInfos = {  }
+        local disInfos = { b={} }
         local disId = {}
 		--printchessdata(chessdata)
         local disInfo, tchessdata = chessdataHandle(chessdata, lastColRow, disId, true)
 	--	printchessdata(tchessdata)
-        table.insert(disInfos, disInfo)
+        table.insert(disInfos.b, disInfo)
         while table.empty(disInfo.dis) == false do
             disInfo, tchessdata = chessdataHandle(tchessdata, lastColRow, disId, true)
 		--	printchessdata(tchessdata)
-            table.insert(disInfos, disInfo)
+            table.insert(disInfos.b, disInfo)
         end
  
         --进行倍数图标处理,统计s个数,倍数图标返回倍数
-        local sNum = mulIconFunctionAndReChess(disInfos, disId, true)
+         mulIconFunctionAndReChess(disInfos.b, disId, true)
         --对棋盘数据进行最终整理,计算棋盘mul
-        local FinMul = arrangeToSave(disInfos)
-		local sMul =  calcSMul(sNum)
-		if normalMul + FinMul > 300 and FinMul >0 then 
+        local FinMul = arrangeToSave(disInfos.b)
+		local sNum = get_sNum(disInfos.b)
+		local sMul =  calcSMul(sNum )
+		disInfos.sMul =sMul
+		disInfos.FinMul = FinMul
+		if normalMul + FinMul + sMul > 300 and FinMul >0 then 
 
 
 
@@ -190,7 +233,7 @@ function Free()
         end
     end
     --进行最终倍数计算
-    local mul = normalMul +NormaltoFreechessdataFinMul
+     mul = mul + normalMul
     return allDisInfos, mul, 3
 end
 
@@ -209,20 +252,20 @@ function Normal()
      --棋盘进行id预处理
     fillCellToId(chessdata)
     --总消除数据，after触发免费后的数据
-    local disInfos = {  }
+    local disInfos = {b={}  }
     local disId = {}
     local disInfo, tchessdata = chessdataHandle(chessdata, lastColRow, disId)
-    table.insert(disInfos, disInfo)
+    table.insert(disInfos.b, disInfo)
     local mul = GetDisinfoMul(disInfo)
     while table.empty(disInfo.dis) == false and mul<=300 do
         disInfo, tchessdata = chessdataHandle(tchessdata, lastColRow, disId)
         mul = mul + GetDisinfoMul(disInfo)
-        table.insert(disInfos, disInfo)
+        table.insert(disInfos.b, disInfo)
     end
     local imageType = 1
     --对棋盘数据进行最终整理,计算最终mul
-    local FinMul = arrangeToSave(disInfos)
-	if  get_sNum(disInfos) >=3 then --如果普通随机到图库就直接不进去
+    local FinMul = arrangeToSave(disInfos.b)
+	if  get_sNum(disInfos.b) >=3 then --如果普通随机到图库就直接不进去
 		imageType = 3
 	end
     return disInfos, FinMul, imageType
@@ -243,10 +286,26 @@ function   get_sNum(disInfos)
 	return  sNum 
       
 end 
+function   get_sNum_xxx(disInfo)
+	local chessdata = disInfo.chessdata --找到最后一幅图
+	local sNum = 0
+	for col = 1, #chessdata do
+		for row = 1, #chessdata[col] do
+			local Id = chessdata[col][row].Id
+			local val = chessdata[col][row].val
+			if val == 70 then
+				sNum = sNum + 1
+			end
+		end
+	end
+	return  sNum 
+      
+end 
 --对数据进行整理保存
 function arrangeToSave(disInfos)
     local FinMul = 0
     for _, disInfo in ipairs(disInfos) do
+		disInfo.Smul  = calcSMul(get_sNum_xxx(disInfo))
         for _, dis in ipairs(disInfo.dis) do
             FinMul = FinMul + dis.mul
         end
@@ -255,26 +314,13 @@ function arrangeToSave(disInfos)
 end
 function mulIconFunctionAndReChess_N(disInfos, disId)
     --随机获取需要产生的倍数图标的个数
-    local field = 'gailvfree'
-	local nummul = 'num'
-	local tmpPoolConfig = {}
-    for _, value in ipairs(table_mul_gamety1) do
-		if value[nummul] >= table_162_freenum[1].normalIconNum and value[nummul]>=0 then
-		table.insert(tmpPoolConfig,{
-			num = value[nummul],
-			gailv = value[field]
-		})
-        end
-    end
-	
-    local mulNum = tmpPoolConfig[gamecommon.CommRandInt(tmpPoolConfig, 'gailv')].num
-    local changeToMul = {} --Id To iconsAttachData
+    local mulNum = table_mul_gamety1[gamecommon.CommRandInt(table_mul_gamety1, 'gailvfree')].num
+ 
     local sNum = 0
     --按照消除棋盘位置留空
     if mulNum > 0 then
         local emptyPoses = {}
         for index, disInfo in ipairs(disInfos) do
-            local lastIdMap = {}
             local chessdata = disInfo.chessdata
             local emptyPos = {}
             sNum = 0
@@ -282,7 +328,7 @@ function mulIconFunctionAndReChess_N(disInfos, disId)
                 for row = 1, #chessdata[col] do
                     local Id = chessdata[col][row].Id
                     local val = chessdata[col][row].val
-                    if disId[Id] == nil and lastIdMap[Id] == nil and val ~= 70 then
+                    if disId[Id] == nil and val ~= 70 then
                         table.insert(emptyPos, { col, row })
                         disId[Id] = 1
                     end
@@ -292,7 +338,6 @@ function mulIconFunctionAndReChess_N(disInfos, disId)
                 end
             end
             table.insert(emptyPoses, emptyPos)
-            lastIdMap = disInfo.iDMap
         end
 		local mass = mulNum - sNum
 		mass = mass <0 and 0 or mass
@@ -330,30 +375,63 @@ function mulIconFunctionAndReChess_N(disInfos, disId)
 end
 --进行倍数图标处理,棋盘还原
 function mulIconFunctionAndReChess(disInfos, disId, isFree)
+    --随机获取需要产生的倍数图标的个数
+    local mulNum = table_mul_gamety2[gamecommon.CommRandInt(table_mul_gamety2, 'gailvfree')].num
     local sNum = 0
     --按照消除棋盘位置留空
-	local emptyPoses = {}
-	for index, disInfo in ipairs(disInfos) do
-		local lastIdMap = {}
-		local chessdata = disInfo.chessdata
-		local emptyPos = {}
-		sNum = 0
-		for col = 1, #chessdata do
-			for row = 1, #chessdata[col] do
-				local Id = chessdata[col][row].Id
-				local val = chessdata[col][row].val
-				if disId[Id] == nil and lastIdMap[Id] == nil and val ~= 70 then
-					table.insert(emptyPos, { col, row })
-					disId[Id] = 1
-				end
-				if    val == 70 then
+    if mulNum > 0 then
+        local emptyPoses = {}
+        for index, disInfo in ipairs(disInfos) do
+            local chessdata = disInfo.chessdata
+            local emptyPos = {}
+            sNum = 0
+            for col = 1, #chessdata do
+                for row = 1, #chessdata[col] do
+                    local Id = chessdata[col][row].Id
+                    local val = chessdata[col][row].val
+                    if disId[Id] == nil and val ~= 70 then
+                        table.insert(emptyPos, { col, row })
+                        disId[Id] = 1
+                    end
+                    if val == 70 then
+                        sNum = sNum + 1
+                    end
+                end
+            end
+            table.insert(emptyPoses, emptyPos)
+        end
+		local mass = mulNum - sNum
+		mass = mass <0 and 0 or mass
+        for i = 1, mass do
+            --随机哪个棋盘
+            if #emptyPoses <= 0 then
+                break
+            end
+            local boardIndex = math.random(#emptyPoses)
+            local emptyPos = emptyPoses[boardIndex]
+            if table.empty(emptyPos) then
+                table.remove(emptyPoses, boardIndex)
+            else
+                local emptyIndex = math.random(#emptyPos)
+                if #emptyPos > 0 and emptyIndex > 0 then
+                    local pos = emptyPos[emptyIndex]
+                    table.remove(emptyPos, emptyIndex)
+                    if #emptyPos <= 0 then
+                        table.remove(emptyPoses, boardIndex)
+                    end
+                    local col, row = pos[1], pos[2]
+                    --生成一个倍数图标
+                    local oldId = disInfos[boardIndex].chessdata[col][row].Id
+                    local uIcon = { Id = iconRealId, val = 70, mul = 0 }
+                    iconRealId = iconRealId + 1
 					sNum = sNum + 1
-				end
-			end
-		end
-		table.insert(emptyPoses, emptyPos)
-		lastIdMap = disInfo.iDMap
-	end
+                    addUIconToChess(disInfos, boardIndex, oldId, uIcon)
+                else
+                    table.remove(emptyPoses, boardIndex)
+                end
+            end
+        end
+    end
     return sNum
 end
 
@@ -374,7 +452,7 @@ end
 
 --对棋盘进行消除处理(一次)
 function chessdataHandle(chessdata, lastColRow, disId, isFree)
-    local disInfo = { dis = {}, chessdata = table.clone(chessdata), mul = 0,winfo= {} }
+    local disInfo = { dis = {}, chessdata = table.clone(chessdata), Smul = 0, mul = 0,winfo= {} }
     --进行是否可消除判断
     getDisMul(disInfo)
     --记录Id将消除位置变为0

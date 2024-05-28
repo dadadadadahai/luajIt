@@ -30,7 +30,7 @@ return {
         gailv200 = 200,
         gailv50 = 200,
         gailv75 = 200,
-        gailvfree = 500,
+        gailvfree = 900,
         num = 2,
     },
 
@@ -41,7 +41,7 @@ return {
         gailv200 = 70,
         gailv50 = 70,
         gailv75 = 70,
-        gailvfree = 300,
+        gailvfree = 30,
         num = 3,
     },
 
@@ -52,7 +52,7 @@ return {
         gailv200 = 30,
         gailv50 = 30,
         gailv75 = 30,
-        gailvfree = 150,
+        gailvfree = 15,
         num = 4,
     },
 
@@ -63,7 +63,7 @@ return {
         gailv200 = 0,
         gailv50 = 0,
         gailv75 = 0,
-        gailvfree = 50,
+        gailvfree = 5,
         num = 5,
     },
 
