@@ -215,6 +215,7 @@ function main()
 		[160] = sweetBonanza,
 		[161] = GreatRhinoceros,
 		[162] = fruitparty2,
+		[164] = MasterJoker,
 	}
 	math.randomseed(os.time())
 	local gameOj = gameModuleMap[TestGameId]
@@ -225,10 +226,10 @@ function main()
 	while true do
 		-- print('loop start')
 		local disInfos, FinMul, tmpimageType = gameOj.StartToImagePool(imageType)
-		if tmpimageType == imageType or imageType == 0 then
-			--[[if FinMul < 12 then 
-				dump(disInfos,"disInfos",5)
-			end --]]
+		if (tmpimageType == imageType or imageType == 0) and FinMul >0  then
+			if FinMul >0 then 
+				--dump(disInfos,"disInfos",5)
+			end 
 			FinMul = tostring(GetRealMul(FinMul,gameOj))
 			mulMap[FinMul] = mulMap[FinMul] or 0
 			if isCheckMul(gameOj, tmpimageType, FinMul) then
@@ -251,10 +252,10 @@ mulMap = {}
 roleMulMap = {}
 isGzip = 1
 --循环次数
-RunTimes = 10000
+RunTimes = 100000
 --图库产生逻辑
 imageType =  1
-TestGameId = 162
+TestGameId = 164
 ischecked = false
 print('run start')
 main()
