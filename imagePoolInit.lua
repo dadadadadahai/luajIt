@@ -251,7 +251,7 @@ mulMap = {}
 roleMulMap = {}
 isGzip = 1
 --循环次数
-RunTimes = 6000
+RunTimes = 10000
 --图库产生逻辑
 imageType =  1
 TestGameId = 162

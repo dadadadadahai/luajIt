@@ -726,17 +726,42 @@ end
 
 -- 遍历棋盘，检查相邻的相同元素
 local function findMatches(board)
+	--[[	local curbord = {
+		{1,7,3,4,5,6,7},
+		{1,5,3,5,5,1,7},
+		{1,2,3,4,5,6,7},
+		{90,1,7,4,1,7,5},
+		{2,2,3,2,5,6,7},
+		{2,7,3,4,1,1,1},
+		{2,3,3,4,5,6,7},
+		}
+		local board = {}
+		local ciconRealId = 1
+		 for col = 1, 7 do
+			board[col] = {}
+			for row = 1, 7 do
+				local iconObj = curbord[col][row]
+				 board[col][row] = {
+					Id = ciconRealId,
+					val = iconObj,
+				}
+				ciconRealId = ciconRealId + 1
+			end
+		end
+		--]]
     local matches = {}
     for i = 1, ROWS do
         for j = 1, COLS do
 			if not board[i][j].use and board[i][j].val ~= 90  then 
-				if i == 3 then
-				local a= 1
+				if i == 5 then
+					local a= 1
 				end 
 				local  positions = checkAdjacent(i, j,board,board[i][j].val)
 				if #positions >= 5  then
 					for _,v in ipairs(positions) do
-						board[v[1]][v[2]].use = true
+						if board[v[1]][v[2]].val ~= 90 then 
+							board[v[1]][v[2]].use = true
+						end 
 					end
 					matches[#matches + 1] = positions
 				end
@@ -778,7 +803,12 @@ function getDisMul(disInfo)
 					if Wmul ==0 then 
 						Wmul = 1
 					end 
-                    table.insert(disInfo.dis, {ele = key,num=num,mul = table_162_paytable[key]['c' .. mulIndex]*Wmul,data=data})
+					local normalmul = table_162_paytable[key]['c' .. mulIndex]
+					local curidata = {ele = key,num=num,mul = normalmul*Wmul,normalmul = normalmul, data=data}
+					if Wmul > 1 then 
+						curidata.smul = Wmul
+					end 
+                    table.insert(disInfo.dis, curidata)
                     break
                 end
             end
