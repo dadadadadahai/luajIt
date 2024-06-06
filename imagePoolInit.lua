@@ -226,7 +226,7 @@ function main()
 	while true do
 		-- print('loop start')
 		local disInfos, FinMul, tmpimageType = gameOj.StartToImagePool(imageType)
-		if (tmpimageType == imageType or imageType == 0) and FinMul >0  then
+		if (tmpimageType == imageType or imageType == 0) then
 			if FinMul >0 then 
 				--dump(disInfos,"disInfos",5)
 			end 
