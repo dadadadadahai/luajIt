@@ -77,6 +77,9 @@ function getExistMul()
 	end
 end
 function GetRealMul(Mul,gameOj)
+	if TestGameId == 163 then 
+		return Mul 
+	end 
 	local hangliename = string.format('table_%d_hanglie',TestGameId)
 	local hanglie = gameOj[hangliename]
 	local line = hanglie[1].linenum
@@ -215,6 +218,7 @@ function main()
 		[160] = sweetBonanza,
 		[161] = GreatRhinoceros,
 		[162] = fruitparty2,
+		[163] = diamond,
 		[164] = MasterJoker,
 	}
 	math.randomseed(os.time())
@@ -252,10 +256,10 @@ mulMap = {}
 roleMulMap = {}
 isGzip = 1
 --循环次数
-RunTimes = 100000
+RunTimes = 1000
 --图库产生逻辑
 imageType =  1
-TestGameId = 164
+TestGameId = 163
 ischecked = false
 print('run start')
 main()
