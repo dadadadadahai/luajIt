@@ -258,7 +258,7 @@ isGzip = 1
 --循环次数
 RunTimes = 1000
 --图库产生逻辑
-imageType =  1
+imageType =  3
 TestGameId = 163
 ischecked = false
 print('run start')

@@ -159,6 +159,7 @@ function table.find(tb,fn)
             return k,v
         end
     end
+	return nil 
 end
 
 function table.keyof(hashtable, value)
@@ -624,6 +625,15 @@ end
 
 function table.tostring(tb)
     return string.format("{%s}",table.concat(tb,","))
+end
+table.shuffle = function(array)
+	local counter = #array
+	while counter > 1 do
+		local index = math.random(counter)
+		array[index], array[counter] = array[counter], array[index]
+		counter = counter - 1
+	end
+	return array
 end
 
 
