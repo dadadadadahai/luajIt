@@ -172,7 +172,7 @@ function addS(boards,isfree)
         
 	end 
 	if  isfree then 
-		 local mass = table_163_free_S_Pro[gamecommon.CommRandInt(table_163_free_S_Pro, 'pro')].num
+		 local mass = table_163_freeSPro[gamecommon.CommRandInt(table_163_freeSPro, 'pro')].num
 		if mass >0 then 
 			 for i = 1, mass do
 				if #emptyPos > 0 then
@@ -239,7 +239,7 @@ function Free()
 		addS(boards,true)
 		-- 计算中奖倍数
 		local winlines = gamecommon.WiningLineFinalCalc(boards,table_163_payline,table_163_paytable,wilds,nowild)
-		if math.random(10000)<500 then --是否在免费游戏中触发bonus 
+		if math.random(10000)<table_163_freebonusPro[1].pro then --是否在免费游戏中触发bonus 
 			addGOLDSEVEN(boards,true)
 			winlines = gamecommon.WiningLineFinalCalc(boards,table_163_payline,table_163_paytable,wilds,nowild)
 		else 
@@ -255,7 +255,7 @@ function Free()
 		res.boards = boards
 
 		if calc_GSeven(boards) >= 3 then 
-			local curbonus = table_163_bonusPro[gamecommon.CommRandInt(table_163_bonusPro, 'pro')]
+			local curbonus = table_163_bonusPro[gamecommon.CommRandInt(table_163_bonusPro, 'freepro')]
 			res.bonus = {}
 			res.bonus.mul = curbonus.mul  
 			res.bonus.info = {}
