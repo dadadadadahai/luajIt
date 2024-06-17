@@ -52,7 +52,7 @@ end
 --增加S
 function addSfake(boards,nums)
 	local snums = calc_S(boards)
-	local needALLsNum =  2
+	local needALLsNum =  nums
 	local emptyPoses = {}
 	local chessdata = boards
 	local emptyPos = {}
@@ -76,22 +76,38 @@ function addSfake(boards,nums)
 end 
 
 function NormaltoFree()
-    local imageType = 1
     local wilds = {}
     wilds[W] = 1
     local nowild = {}
     -- 初始棋盘
     local boards = gamecommon.CreateSpecialChessData(DataFormat, table_126_normalspin)
-	local isfakeS = false 
-	if math.random(10000) <5000 then 
-		isfakeS = true
-		addS(boards)
+	local disInfo = {} 
+	local isfake = nil 
+	if math.random(10000) <5000 and false  then 
+		addSfake(boards,2)
+		local disboards = table.clone(boards)
+		addSfake(disboards,3)
+		local diswl = gamecommon.WiningLineFinalCalc(disboards,table_126_payline,table_126_paytable,wilds,nowild)
+		local winLines = {}
+		local  winMul = 0
+		-- 计算中奖线金额
+		for k, v in ipairs(diswl) do
+			table.insert(winLines, {v.line, v.num, v.mul,v.ele})
+			winMul = sys.addToFloat(winMul,v.mul)
+		end
+		local res = {
+        boards = disboards,
+        winLines = winLines,
+        sumMul = winMul,
+		}
+		table.insert(disInfo,res)
+		isfake = 1
 	else 
 		addS(boards)
 	end 
     local winlines = gamecommon.WiningLineFinalCalc(boards,table_126_payline,table_126_paytable,wilds,nowild)
     local winLines = {}
-    winMul = 0
+    local  winMul = 0
     -- 计算中奖线金额
     for k, v in ipairs(winlines) do
         table.insert(winLines, {v.line, v.num, v.mul,v.ele})
@@ -107,12 +123,14 @@ function NormaltoFree()
 	end
 
     local res = {
+		isfake = isfake,
+		disInfo = disInfo,
         boards = boards,
-        winLines = winLines,
-        sumMul = winMul,
+        winLines = isfake and disInfo[1].winLines or winLines,
+        sumMul = isfake and disInfo[1].winMul or  winMul,
 		FreeInfo  = {
 				freetypes = freetypes,
-				FreeNum = calc_free_nums(boards),
+				FreeNum = isfake and calc_free_nums(disInfo[1].boards) or  calc_free_nums(calc_S(boards)),
 				Level = 1,
 				Wnums = 0,
 				MFM = table.find(freetypes,function (v,k)
@@ -129,7 +147,7 @@ function NormaltoFree()
 	if table.find(freetypes,function (v,k)
 		return v == TWOFR
 	end) then 
-		res.FreeInfo.FreeNum = res.FreeNum + 2
+		res.FreeInfo.FreeNum = res.FreeInfo.FreeNum + 2
 	end  
 	if table.find(freetypes,function (v,k)
 		return v == SEC
@@ -139,12 +157,23 @@ function NormaltoFree()
 	end  
     return res, winMul
 end 
+function GetLevelmul(Level)
+	if Level == 4 then 
+		return 10
+	elseif Level ==3 then 
+		return 3
+	elseif Level == 2 then 
+		return 2
+	else 
+		return 1
+	end 
+end 
 function BuyFree()
     --默认15次
     local tFreeNum =10
     local cFreeNum = 0
     --全部u图标累计
-    local allUMul = 0
+
     --普通倍数 
     local normalMul = 0
     local allresInfos = {}
@@ -153,40 +182,42 @@ function BuyFree()
 	table.insert(allresInfos, NormaltoFreeres)
 	tFreeNum = FreeInfo.FreeNum
     while true do
-        local chessdata, lastColRow = gamecommon.CreateSpecialChessData(DataFormat, table_126_free_1)
-        iconRealId = 1
-        fillCellToId(chessdata)
-        --总消除数据，after触发免费后的数据
-        --一次棋盘消除数据
-        local disInfos = {  }
-        local disId = {}
-        local disInfo, tchessdata = chessdataHandle(chessdata, lastColRow, disId, true)
-        table.insert(disInfos, disInfo)
-        while table.empty(disInfo.dis) == false do
-            disInfo, tchessdata = chessdataHandle(tchessdata, lastColRow, disId, true)
-            table.insert(disInfos, disInfo)
-        end
-        --进行倍数图标处理,统计s个数,倍数图标返回倍数
-        local sNum, uMul = mulIconFunctionAndReChess(disInfos, disId, true)
-        --对棋盘数据进行最终整理,计算棋盘mul
-        local FinMul = arrangeToSave(disInfos)
-		local sMul =  calcSMul(sNum)
-		FinMul = FinMul + sMul
-		uMul = uMul == 0  and 1 or uMul
-		 
-		if normalMul + FinMul * uMul > 300 and FinMul >0 then 
-
-		else
-			normalMul = normalMul + FinMul * uMul
-			cFreeNum = cFreeNum + 1
-			table.insert(allresInfos, disInfos)
-			if sNum >= 3 then
-				tFreeNum = tFreeNum + 5
-			end    
-		end 
-           
+		local wilds = {}
+		wilds[W] = 1
+		local nowild = {}
+		-- 初始棋盘
+		local boards = gamecommon.CreateSpecialChessData(DataFormat, table_126_freespin)
+		local winlines = gamecommon.WiningLineFinalCalc(boards,table_126_payline,table_126_paytable,wilds,nowild)
+		local reswinLines = {}
+		local winMul = 0
+		-- 计算中奖线金额
+		for k, v in ipairs(winlines) do
+			table.insert(reswinLines, {v.line, v.num, v.mul,v.ele})
+			winMul = sys.addToFloat(winMul,v.mul)
+		end
+		 -- 生成返回数据
+		local res = {
+			boards = boards,
+			winLines = reswinLines,
+			sumMul = winMul,
+			iconsAttachData = {},
+		}
+		res.umul  = GetIconInfoU(boards,res.iconsAttachData)
+		res.wNum  = calc_W(boards)
+		res.wumul = res.umul*res.wNum*GetLevelmul(FreeInfo.Level)
+		table.insert(allresInfos,res)
+		FreeInfo.Wnums = FreeInfo.Wnums  +  res.wNum
+		normalMul = normalMul +winMul  + res.wumul*10
+		cFreeNum = cFreeNum + 1
         if cFreeNum >= tFreeNum  then
-            break
+			local curFreeInfoWnums = FreeInfo.Wnums >12 and 12 or FreeInfo.Wnums
+			local curlevel = math.floor(curFreeInfoWnums/4) +1
+			if curlevel > FreeInfo.Level then 
+				tFreeNum = tFreeNum + 10 * (curlevel -FreeInfo.Level )
+				FreeInfo.Level = curlevel
+			else 
+				break
+			end 
         end
     end
     --进行最终倍数计算
@@ -252,16 +283,19 @@ function GetIconInfoU(boards,iconsAttachData)
     -- 初始化U图标个数
     iconsAttachData.uNum = 0
     iconsAttachData.boardsInfo = {}
-    local listpoint = 0
+    local umul = 0
     -- 遍历棋盘生成对应位置U图标的信息
     for col = 1, #DataFormat do
         for row = 1, DataFormat[col] do
             if boards[col][row] == U then
-                table.insert(iconsAttachData.boardsInfo,{col = col, row = row, mul = table_126_bmul[gamecommon.CommRandInt(table_126_bmul, 'pro6')].mul})
+				local xxx = {col = col, row = row, mul = table_126_bmul[gamecommon.CommRandInt(table_126_bmul, 'pro6')].mul}
+                table.insert(iconsAttachData.boardsInfo,xxx)
                 iconsAttachData.uNum = iconsAttachData.uNum + 1
+				umul = umul + xxx.mul
             end
         end
     end
+	return umul 
 end
 
 -- 判断U图标是否中奖
@@ -309,6 +343,20 @@ function calc_S(boards)
 		for row = 1,3 do
 			local val = boards[col][row]
 			if val == S then
+				sNum = sNum + 1
+			end
+		end
+	end
+	return  sNum 
+      
+end 
+
+function calc_W(boards)
+	local sNum = 0
+	for col = 1,5 do
+		for row = 1,3 do
+			local val = boards[col][row]
+			if val == W then
 				sNum = sNum + 1
 			end
 		end
