@@ -84,6 +84,9 @@ function Normal()
     -- respin中奖金额
 	boards = gamecommon.CreateSpecialChessData(DataFormat,table_163_normalspin)
 	-- 计算中奖倍数
+	if math.random(10000) < 1000 then 
+		addSfake(boards)
+	end 
 	local winlines = gamecommon.WiningLineFinalCalc(boards,table_163_payline,table_163_paytable,wilds,nowild)
 	addGOLDSEVEN(boards)
 	-- 计算中奖线金额
@@ -152,19 +155,20 @@ end
 function addS(boards,isfree)
 	local emptyPos = {}
 	for col = 1, #boards , 2 do
+		emptyPos[col] = {}
 		for row = 1, #boards[col] do
 			local val = boards[col][row]
 			if val ~= S then
-				table.insert(emptyPos, { col, row })
+				table.insert(emptyPos[col], { col, row })
 			end 
 		end
 	end
 	if not isfree and #emptyPos> 0 then 
-		 local mass = 3
-		 for i = 1, mass do
+		for i = 1, #boards , 2 do
 			if #emptyPos > 0 then
-				local emptyIndex = math.random(#emptyPos)
-				local pos = table.remove(emptyPos, emptyIndex)
+				local curempty =  emptyPos[i]
+				local emptyIndex = math.random(#curempty)
+				local pos = curempty[emptyIndex]
 				local col, row = pos[1], pos[2]
 				boards[col][row] =  S 
 			end
@@ -174,16 +178,47 @@ function addS(boards,isfree)
 	if  isfree then 
 		 local mass = table_163_freeSPro[gamecommon.CommRandInt(table_163_freeSPro, 'pro')].num
 		if mass >0 then 
-			 for i = 1, mass do
+			local curmass = 0 
+			for i = 1, #boards , 2 do
 				if #emptyPos > 0 then
-					local emptyIndex = math.random(#emptyPos)
-					local pos = table.remove(emptyPos, emptyIndex)
+					curmass = curmass + 1
+					local curempty =  emptyPos[i]
+					local emptyIndex = math.random(#curempty)
+					local pos = curempty[emptyIndex]
 					local col, row = pos[1], pos[2]
 					boards[col][row] =  S 
 				end
+				if curmass == mass then 
+					break
+				end 
 			end
 		end 
 	end 
+end 
+
+function addSfake(boards)
+	local emptyPos = {}
+	for col = 1, 3 , 2 do
+		emptyPos[col] = {}
+		for row = 1, #boards[col] do
+			local val = boards[col][row]
+			if val ~= S then
+				table.insert(emptyPos[col], { col, row })
+			end 
+		end
+	end
+	if  #emptyPos> 0 then 
+		for i = 1, 3 , 2 do
+			if #emptyPos > 0 then
+				local curempty =  emptyPos[i]
+				local emptyIndex = math.random(#curempty)
+				local pos = curempty[emptyIndex]
+				local col, row = pos[1], pos[2]
+				boards[col][row] =  S 
+			end
+		end
+	end 
+	
 end 
 
 function NormaltoFree()
