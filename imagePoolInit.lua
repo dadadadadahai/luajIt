@@ -256,10 +256,10 @@ mulMap = {}
 roleMulMap = {}
 isGzip = 1
 --循环次数
-RunTimes = 150000
+RunTimes = 10000
 --图库产生逻辑
-imageType =  1
-TestGameId = 164
+imageType =  2
+TestGameId = 163
 ischecked = false
 print('run start')
 main()

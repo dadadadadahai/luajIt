@@ -3,25 +3,25 @@ return {
 
     [1] = {
         ID = 1,
-        iconId = 6,
-        pro = 8750,
+        num = 1,
+        pro = 8000,
     },
 
     [2] = {
         ID = 2,
-        iconId = 61,
-        pro = 1000,
+        num = 2,
+        pro = 2000,
     },
 
     [3] = {
         ID = 3,
-        iconId = 62,
+        num = 3,
         pro = 200,
     },
 
     [4] = {
         ID = 4,
-        iconId = 63,
+        num = 4,
         pro = 50,
     },
 
