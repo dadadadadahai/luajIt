@@ -77,7 +77,7 @@ function getExistMul()
 	end
 end
 function GetRealMul(Mul,gameOj)
-	if TestGameId == 163 then 
+	if TestGameId == 163  then 
 		return Mul 
 	end 
 	local hangliename = string.format('table_%d_hanglie',TestGameId)

@@ -1,88 +1,25 @@
--- 大象游戏模块
 module('GreatRhinoceros', package.seeall)
--- 大象所需数据库表名称
-DB_Name = "game161greatrhinoceros"
+
 -- 大象通用配置
 GameId = 161
 S = 70
 W = 90
-U = 80
 DataFormat = {3,3,3,3,3}    -- 棋盘规格
 Table_Base = import "table/game/161/table_161_hanglie"                        -- 基础行列
-MaxNormalIconId = 6
-NeedAddWildNum = 3          -- 免费中需要收集W个数
-OneAddWildMul = 2           -- 免费中每次收集满增加倍数
-MaxWildMul = 20             -- 免费中最多收集倍数上限
-LineNum = Table_Base[1].linenum
-local iconRealId = 1
-local freeNum = 0
---执行大象图库
-function StartToImagePool(imageType)
-    return Normal()
-end
 
-function Free(freeLackNum)
-    -- 获取W元素
-    local wilds = {}
-    wilds[W] = 1
-    local nowild = {}
-    -- 初始棋盘
-    local boards = {}
-    local freeInfo = {}
-    local wildNum = 0
-    local totalMul = 0
-    -- 生成返回数据
-    while true do
-        if freeLackNum <= 0 then
-            break
-        end
-        freeLackNum = freeLackNum - 1
-        -- 生成异形棋盘
-        boards = gamecommon.CreateSpecialChessData(DataFormat,GreatRhinoceros['table_161_free'])
-    
-        -- 获取中奖线
-        local winPoints = {}
-        -- 计算中奖倍数
-        local resWinPoints,winMuls  = gamecommon.SpecialAllLineFinal(boards,wilds,nowild,table_161_paytable)
-        winPoints[1] = resWinPoints
-        -- 获取中奖线
-        local wMul = 2
-        local wildPoints = {}
-        local wNum = 0
-        -- 统计W个数
-        for col = 1, #boards do
-            for row = 1, #boards[col] do
-                if boards[col][row] == W then
-                    table.insert(wildPoints,{line = col, row = row})
-                    wNum = wNum + 1
-                end
-            end
-        end
-        wildNum = wildNum + wNum
-        -- 根据W个数匹配倍数
-        wMul = wMul + math.floor(wildNum / NeedAddWildNum) * OneAddWildMul
-        if wMul > MaxWildMul then
-            wMul = MaxWildMul
-        end
-        local winMul = 0
-        local winEle = {}
-        for i, v in ipairs(winMuls) do
-            winMul = sys.addToFloat(winMul,v.mul)
-            table.insert(winEle,{ele = v.ele,mul = v.mul})
-        end
-        local res = {
-            boards = boards,                    --棋盘图标
-            winPoints = winPoints,              --中奖下标
-            wMul = wMul,                        --本轮的W倍数
-            winMul = winMul,                    --本轮的普通倍数
-            wildNum = wildNum,                  --W个数
-            winEle = winEle,
-        }
-        table.insert(freeInfo,res)
-        -- 增加倍数
-        totalMul = sys.addToFloat(totalMul,(winMul * wMul))
+LineNum = Table_Base[1].linenum
+
+--执行雷神2图库
+function StartToImagePool(imageType)
+    if imageType == 1 then
+        return Normal()
+	elseif imageType ==2 then
+	--跑免费图库
+		return Free()
+	elseif imageType ==3 then
+	--跑免费图库
+		return bonus()
     end
-    return freeInfo,totalMul
 end
 
 function Normal()
@@ -94,164 +31,26 @@ function Normal()
     local boards = {}
     -- 生成返回数据
     local res = {}
-    -- 生成异形棋盘
-    boards = gamecommon.CreateSpecialChessData(DataFormat,table_161_normalspin)
-    local elephantInfo = {
-        betMoney = 1,
-        free = {},
-    }
-    -- 计算中奖倍数
-    local winPoints,winMuls  = gamecommon.SpecialAllLineFinal(boards,wilds,nowild,table_161_paytable)
-    -- -- 中奖金额
-    -- res.winScore = 0
     -- 获取中奖线
-    res.winPoints = {}
-    res.winPoints[1] = winPoints
-
-
-    
-    -- 触发位置
-    res.tringerPoints = {}
-    res.winEle = {}
+    res.winlines = {}
     local winMul = 0
-    for i, v in ipairs(winMuls) do
-        winMul = sys.addToFloat(winMul,v.mul)
-        table.insert(res.winEle,{ele = v.ele,mul = v.mul})
-    end
-    res.normalMul = winMul
-    -- 棋盘数据保存数据库对象中 外部调用后保存数据库
-    elephantInfo.boards = boards
-    -- 判断是否中Free
-    local free
-    res.tringerPoints.freeTringerPoints,free = GetFree(elephantInfo)
-    res.freeTotalTime = free.totalTimes or 0
+    local imageType = 1
+    -- respin中奖金额
+	boards = gamecommon.CreateSpecialChessData(DataFormat,table_161_normalspin)
+	-- 计算中奖倍数
+	local winlines = gamecommon.WiningLineFinalCalc(boards,table_161_payline,table_161_paytable,wilds,nowild)
+	-- 计算中奖线金额
+	for k, v in ipairs(winlines) do
+		table.insert(res.winlines, {v.line, v.num, v.mul,v.ele})
+		winMul = sys.addToFloat(winMul,v.mul)
+	end
     -- 棋盘数据
     res.boards = boards
-    local imageType = 1
-    if free.totalTimes ~= nil and free.totalTimes > 0 then
-        res.freeInfo,res.freeMul = Free(free.lackTimes)
-        winMul = winMul + res.freeMul
-        imageType = 2
-    end
-
+	res.winMul = winMul
     return res, winMul, imageType
 end
 
--- 判断是否触发免费
-function GetFree(elephantInfo)
-    local sNum = 0
-    -- 触发免费位置
-    local freeTringerPoints = {}
-    -- 统计S个数
-    for col = 1, #elephantInfo.boards do
-        for row = 1, #elephantInfo.boards[col] do
-            if elephantInfo.boards[col][row] == S then
-                table.insert(freeTringerPoints,{line = col, row = row})
-                sNum = sNum + 1
-            end
-        end
-    end
-    local free = {}
-    for i, sNumInfo in ipairs(table_161_freenum) do
-        if sNum == sNumInfo.sNum then
-            free = {
-                totalTimes = sNumInfo.freeNum,
-                lackTimes = sNumInfo.freeNum,
-                tWinScore = 0,
-                wildNum = 0,
-            }
-            break
-        end
-    end
-    return freeTringerPoints,free
-end-- 大象游戏模块
-module('GreatRhinoceros', package.seeall)
--- 大象所需数据库表名称
-DB_Name = "game161greatrhinoceros"
--- 大象通用配置
-GameId = 161
-S = 70
-W = 90
-U = 80
-DataFormat = {3,3,3,3,3}    -- 棋盘规格
-Table_Base = import "table/game/161/table_161_hanglie"                        -- 基础行列
-MaxNormalIconId = 6
-NeedAddWildNum = 3          -- 免费中需要收集W个数
-OneAddWildMul = 2           -- 免费中每次收集满增加倍数
-MaxWildMul = 20             -- 免费中最多收集倍数上限
-LineNum = Table_Base[1].linenum
-local iconRealId = 1
-local freeNum = 0
---执行大象图库
-function StartToImagePool(imageType)
-    return Normal()
-end
-
-function Free(freeLackNum)
-    -- 获取W元素
-    local wilds = {}
-    wilds[W] = 1
-    local nowild = {}
-    -- 初始棋盘
-    local boards = {}
-    local freeInfo = {}
-    local wildNum = 0
-    local totalMul = 0
-    -- 生成返回数据
-    while true do
-        if freeLackNum <= 0 then
-            break
-        end
-        freeLackNum = freeLackNum - 1
-        -- 生成异形棋盘
-        boards = gamecommon.CreateSpecialChessData(DataFormat,GreatRhinoceros['table_161_free'])
-    
-        -- 获取中奖线
-        local winPoints = {}
-        -- 计算中奖倍数
-        local resWinPoints,winMuls  = gamecommon.SpecialAllLineFinal(boards,wilds,nowild,table_161_paytable)
-        winPoints[1] = resWinPoints
-        -- 获取中奖线
-        local wMul = 2
-        local wildPoints = {}
-        local wNum = 0
-        -- 统计W个数
-        for col = 1, #boards do
-            for row = 1, #boards[col] do
-                if boards[col][row] == W then
-                    table.insert(wildPoints,{line = col, row = row})
-                    wNum = wNum + 1
-                end
-            end
-        end
-        wildNum = wildNum + wNum
-        -- 根据W个数匹配倍数
-        wMul = wMul + math.floor(wildNum / NeedAddWildNum) * OneAddWildMul
-        if wMul > MaxWildMul then
-            wMul = MaxWildMul
-        end
-        local winMul = 0
-        local winEle = {}
-        for i, v in ipairs(winMuls) do
-            winMul = sys.addToFloat(winMul,v.mul)
-            table.insert(winEle,{ele = v.ele,mul = v.mul})
-        end
-        local res = {
-            boards = boards,                    --棋盘图标
-            winPoints = winPoints,              --中奖下标
-            wMul = wMul,                        --本轮的W倍数
-            winMul = winMul,                    --本轮的普通倍数
-            wildNum = wildNum,                  --W个数
-            winEle = winEle,
-        }
-        table.insert(freeInfo,res)
-        -- 增加倍数
-        totalMul = sys.addToFloat(totalMul,(winMul * wMul))
-    end
-    return freeInfo,totalMul
-end
-
-function Normal()
+function bonus()
     -- 获取W元素
     local wilds = {}
     wilds[W] = 1
@@ -260,74 +59,254 @@ function Normal()
     local boards = {}
     -- 生成返回数据
     local res = {}
-    -- 生成异形棋盘
-    boards = gamecommon.CreateSpecialChessData(DataFormat,table_161_normalspin)
-    local elephantInfo = {
-        betMoney = 1,
-        free = {},
-    }
-    -- 计算中奖倍数
-    local winPoints,winMuls  = gamecommon.SpecialAllLineFinal(boards,wilds,nowild,table_161_paytable)
-    -- -- 中奖金额
-    -- res.winScore = 0
     -- 获取中奖线
-    res.winPoints = {}
-    res.winPoints[1] = winPoints
-
-
-    
-    -- 触发位置
-    res.tringerPoints = {}
-    res.winEle = {}
+    res.winlines = {}
     local winMul = 0
-    for i, v in ipairs(winMuls) do
-        winMul = sys.addToFloat(winMul,v.mul)
-        table.insert(res.winEle,{ele = v.ele,mul = v.mul})
-    end
-    res.normalMul = winMul
-    -- 棋盘数据保存数据库对象中 外部调用后保存数据库
-    elephantInfo.boards = boards
-    -- 判断是否中Free
-    local free
-    res.tringerPoints.freeTringerPoints,free = GetFree(elephantInfo)
-    res.freeTotalTime = free.totalTimes or 0
+    local imageType = 1
+    -- respin中奖金额
+	boards = gamecommon.CreateSpecialChessData(DataFormat,table_161_normalspin)
+	addGOLDSEVEN(boards,true)
+	-- 计算中奖倍数
+	local winlines = gamecommon.WiningLineFinalCalc(boards,table_161_payline,table_161_paytable,wilds,nowild)
+	-- 计算中奖线金额
+	for k, v in ipairs(winlines) do
+		table.insert(res.winlines, {v.line, v.num, v.mul,v.ele})
+		winMul = sys.addToFloat(winMul,v.mul)
+	end
+	if calc_GSeven(boards) >= 3 then 
+		imageType = 3
+		local curbonus = table_161_bonusPro[gamecommon.CommRandInt(table_161_bonusPro, 'pro')]
+		res.bonus = {}
+		res.bonus.mul = curbonus.mul  
+		res.bonus.info = {}
+		local curbonusinfo = {}
+		for i = 1,4 do
+			if i ~= curbonus.ID then
+				table.insert(curbonusinfo,i)
+				table.insert(curbonusinfo,i)
+			end 
+		end
+		curbonusinfo =table.shuffle(curbonusinfo)
+		local maxnums = math.random(0,6)
+		for i=1,maxnums do
+			table.insert(res.bonus.info,table.remove(curbonusinfo,1))
+		end
+		table.insert(res.bonus.info,curbonus.ID)
+		table.insert(res.bonus.info,curbonus.ID)
+		res.bonus.info =table.shuffle(res.bonus.info)
+		table.insert(res.bonus.info,curbonus.ID)
+		winMul = winMul + res.bonus.mul
+	else
+		print("@@@@@@@@@@@@@@@@@@@@")
+	end 
     -- 棋盘数据
     res.boards = boards
-    local imageType = 1
-    if free.totalTimes ~= nil and free.totalTimes > 0 then
-        res.freeInfo,res.freeMul = Free(free.lackTimes)
-        winMul = winMul + res.freeMul
-        imageType = 2
-    end
-
     return res, winMul, imageType
 end
+function addS(boards,isfree)
+	local emptyPos = {}
+	for col = 1, #boards , 2 do
+		emptyPos[col] = {}
+		for row = 1, #boards[col] do
+			local val = boards[col][row]
+			if val ~= S then
+				table.insert(emptyPos[col], { col, row })
+			end 
+		end
+	end
+	if not isfree and #emptyPos> 0 then 
+		for i = 1, #boards , 2 do
+			if #emptyPos > 0 then
+				local curempty =  emptyPos[i]
+				local emptyIndex = math.random(#curempty)
+				local pos = curempty[emptyIndex]
+				local col, row = pos[1], pos[2]
+				boards[col][row] =  S 
+			end
+		end
+        
+	end 
+	if  isfree then 
+		 local mass = table_161_freeSPro[gamecommon.CommRandInt(table_161_freeSPro, 'pro')].num
+		if mass >0 then 
+			local curmass = 0 
+			for i = 1, #boards , 2 do
+				if #emptyPos > 0 then
+					curmass = curmass + 1
+					local curempty =  emptyPos[i]
+					local emptyIndex = math.random(#curempty)
+					local pos = curempty[emptyIndex]
+					local col, row = pos[1], pos[2]
+					boards[col][row] =  S 
+				end
+				if curmass == mass then 
+					break
+				end 
+			end
+		end 
+	end 
+end 
 
--- 判断是否触发免费
-function GetFree(elephantInfo)
-    local sNum = 0
-    -- 触发免费位置
-    local freeTringerPoints = {}
-    -- 统计S个数
-    for col = 1, #elephantInfo.boards do
-        for row = 1, #elephantInfo.boards[col] do
-            if elephantInfo.boards[col][row] == S then
-                table.insert(freeTringerPoints,{line = col, row = row})
-                sNum = sNum + 1
-            end
-        end
-    end
-    local free = {}
-    for i, sNumInfo in ipairs(table_161_freenum) do
-        if sNum == sNumInfo.sNum then
-            free = {
-                totalTimes = sNumInfo.freeNum,
-                lackTimes = sNumInfo.freeNum,
-                tWinScore = 0,
-                wildNum = 0,
-            }
+function addSfake(boards)
+	local emptyPos = {}
+	for col = 1, 3 , 2 do
+		emptyPos[col] = {}
+		for row = 1, #boards[col] do
+			local val = boards[col][row]
+			if val ~= S then
+				table.insert(emptyPos[col], { col, row })
+			end 
+		end
+	end
+	if  #emptyPos> 0 then 
+		for i = 1, 3 , 2 do
+			if #emptyPos > 0 then
+				local curempty =  emptyPos[i]
+				local emptyIndex = math.random(#curempty)
+				local pos = curempty[emptyIndex]
+				local col, row = pos[1], pos[2]
+				boards[col][row] =  S 
+			end
+		end
+	end 
+	
+end 
+
+function NormaltoFree()
+   -- 获取W元素
+    local wilds = {}
+    wilds[W] = 1
+    local nowild = {}
+    -- 初始棋盘
+    local boards = {}
+    -- 生成返回数据
+    local res = {}
+    -- 获取中奖线
+    res.winlines = {}
+    local winMul = 0
+    -- respin中奖金额
+	boards = gamecommon.CreateSpecialChessData(DataFormat,table_161_normalspin)
+	-- 计算中奖倍数
+	addS(boards)
+	local winlines = gamecommon.WiningLineFinalCalc(boards,table_161_payline,table_161_paytable,wilds,nowild)
+	-- 计算中奖线金额
+	for k, v in ipairs(winlines) do
+		table.insert(res.winlines, {v.line, v.num, v.mul,v.ele})
+		winMul = sys.addToFloat(winMul,v.mul)
+	end
+    -- 棋盘数据
+    res.boards = boards
+	res.winMul = winMul
+    return res, winMul
+end 
+
+function Free()
+	local tFreeNum = 8
+    local cFreeNum = 0
+	local allInfos = {}
+	local allwinMul = 0 
+	local ntfres,ntfwinmul = NormaltoFree()
+	table.insert(allInfos, ntfres)
+	while true do	
+			-- 获取W元素
+		local wilds = {}
+		wilds[W] = 1
+		local nowild = {}
+		-- 初始棋盘
+		local boards = {}
+		-- 生成返回数据
+		local res = {}
+		-- 获取中奖线
+		res.winlines = {}
+		local winMul = 0
+		local imageType = 1
+		-- respin中奖金额
+		boards = gamecommon.CreateSpecialChessData(DataFormat,table_161_normalspin)
+		addS(boards,true)
+		-- 计算中奖倍数
+		local winlines = gamecommon.WiningLineFinalCalc(boards,table_161_payline,table_161_paytable,wilds,nowild)
+		if math.random(10000)<table_161_freebonusPro[1].pro then --是否在免费游戏中触发bonus 
+			addGOLDSEVEN(boards,true)
+			winlines = gamecommon.WiningLineFinalCalc(boards,table_161_payline,table_161_paytable,wilds,nowild)
+		else 
+			addGOLDSEVEN(boards)
+		end 
+	
+		-- 计算中奖线金额
+		for k, v in ipairs(winlines) do
+			table.insert(res.winlines, {v.line, v.num, v.mul,v.ele})
+			winMul = sys.addToFloat(winMul,v.mul)
+		end
+		-- 棋盘数据
+		res.boards = boards
+
+		if calc_GSeven(boards) >= 3 then 
+			local curbonus = table_161_bonusPro[gamecommon.CommRandInt(table_161_bonusPro, 'freepro')]
+			res.bonus = {}
+			res.bonus.mul = curbonus.mul  
+			res.bonus.info = {}
+			local curbonusinfo = {}
+			for i = 1,4 do
+				if i ~= curbonus.ID then
+					table.insert(curbonusinfo,i)
+					table.insert(curbonusinfo,i)
+				end 
+			end
+			curbonusinfo =table.shuffle(curbonusinfo)
+			local maxnums = math.random(0,6)
+			for i=1,maxnums do
+				table.insert(res.bonus.info,table.remove(curbonusinfo,1))
+			end
+			table.insert(res.bonus.info,curbonus.ID)
+			table.insert(res.bonus.info,curbonus.ID)
+			res.bonus.info =table.shuffle(res.bonus.info)
+			table.insert(res.bonus.info,curbonus.ID)
+			winMul = winMul + res.bonus.mul
+		end 
+		res.winMul = winMul
+		allwinMul = allwinMul + winMul 
+        table.insert(allInfos, res)
+		if check_is_to_free(boards) then
+			tFreeNum = tFreeNum + 8
+		end 
+		cFreeNum = cFreeNum + 1
+		if cFreeNum >= tFreeNum then
             break
         end
-    end
-    return freeTringerPoints,free
+	end 
+	allwinMul = allwinMul + ntfwinmul
+    return allInfos, allwinMul, 2
 end
+
+function calc_S(boards)
+	local sNum = 0
+	for col = 1,5 do
+		for row = 1,3 do
+			local val = boards[col][row]
+			if val == S then
+				sNum = sNum + 1
+			end
+		end
+	end
+	return  sNum 
+      
+end 
+
+function calc_GSeven(boards)
+	local sNum = 0
+	for col = 1,5 do
+		for row = 1,3 do
+			local val = boards[col][row]
+			if val == GOLDSEVEN then
+				sNum = sNum + 1
+			end
+		end
+	end
+	return  sNum 
+      
+end 
+
+function check_is_to_free(boards)
+	local sNum = calc_S(boards)
+	return  sNum >= 3
+end 

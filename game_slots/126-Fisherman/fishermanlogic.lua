@@ -23,8 +23,9 @@ FAKEPRO = import "table/game/126/table_126_fakepro"
 FREETYPES = import "table/game/126/table_126_freetypes" 
 LineNum = Table_Base[1].linenum
 --执行雷神2图库
-    local wilds = {}
-    wilds[W] = 1
+local wilds = {}
+wilds[W] = 1
+local allu = {}
 function StartToImagePool(imageType)
     if imageType == 1 then
         return Normal()
@@ -70,13 +71,16 @@ function NormaltoFree()
 			table.insert(freetypes,i)
 		end 
 	end
-
+	local iconsAttachData = {}
+	GetIconInfoU(boards,iconsAttachData)
+	allu = {}
     local res = {
 		isfake = isfake,
 		disInfo = disInfo,
         boards = boards,
         winLines = isfake and disInfo[#disInfo].winLines or winLines,
         sumMul = isfake and disInfo[#disInfo].sumMul or  winMul,
+		iconsAttachData = iconsAttachData,
 		FreeInfo  = {
 				freetypes = freetypes,
 				FreeNum = isfake and calc_free_nums(calc_S(disInfo[#disInfo].boards)) or  calc_free_nums(calc_S(boards)),
@@ -95,6 +99,7 @@ function NormaltoFree()
 					return v == MPROPS
 				end),
 		}
+	
     }
 	if table.find(freetypes,function (v,k)
 		return v == TWOFR
@@ -149,9 +154,12 @@ function BuyFree()
 			sumMul = isfake and disInfo[#disInfo].sumMul or  winMul,
 			iconsAttachData = {},
 		}
-		res.umul  = GetIconInfoU(curboards,res.iconsAttachData,true)
+		GetIconInfoU(boards,res.iconsAttachData,true)
+		local curiconsAttachData = {}
+		res.umul  =isfake  and disInfo[#disInfo].iconsAttachData.umul or res.iconsAttachData.umul
 		res.wNum  = calc_W(curboards)
 		res.wumul = res.umul*res.wNum*GetLevelmul(FreeInfo.Level)
+		allu = {}
 		table.insert(allresInfos,res)
 		FreeInfo.Wnums = FreeInfo.Wnums  +  res.wNum
 		normalMul = normalMul +res.sumMul  + res.wumul*10
@@ -248,6 +256,7 @@ function Normal()
 		iconsAttachData = {},
     }
 	GetIconInfoU(boards,res.iconsAttachData)
+	allu = {}
 	if  check_is_to_free(boards) then --如果普通随机到图库就直接不进去
 		imageType = 3
 	end 
@@ -308,6 +317,7 @@ function addSfake(boards,nums,faketype)
 	end
 	local mass = needALLsNum - snums
 	mass = mass <0 and 0 or mass
+	local ChangePoss = {}
 	for i = 1, mass do
 		local emptyIndex = math.random(#emptyPos)
 		local emptycol = table.remove(emptyPos, emptyIndex)
@@ -315,7 +325,9 @@ function addSfake(boards,nums,faketype)
 		local col, row = pos[1], pos[2]
 		--生成一个倍数图标
 		boards[col][row] = S
+		table.insert(ChangePoss,{col = col ,pos = pos })
 	end 
+	return ChangePoss
 end 
 function GetLevelmul(Level)
 	if Level == 4 then 
@@ -335,19 +347,29 @@ function GetIconInfoU(boards,iconsAttachData,isfree)
 	
     iconsAttachData.uNum = 0
     iconsAttachData.boardsInfo = {}
-    local umul = 0
+	iconsAttachData.umul = 0
     -- 遍历棋盘生成对应位置U图标的信息
     for col = 1, #DataFormat do
         for row = 1, DataFormat[col] do
+			local alluid =col*10+row 
             if boards[col][row] == U then
-				local xxx = {col = col, row = row, mul = table_126_bmul[gamecommon.CommRandInt(table_126_bmul, pro)].mul}
-                table.insert(iconsAttachData.boardsInfo,xxx)
-                iconsAttachData.uNum = iconsAttachData.uNum + 1
-				umul = umul + xxx.mul
+				if allu[alluid] then 
+					local xxx = allu[alluid]
+					table.insert(iconsAttachData.boardsInfo,xxx)
+					iconsAttachData.uNum = iconsAttachData.uNum + 1
+					iconsAttachData.umul = iconsAttachData.umul + xxx.mul
+				else 
+					local xxx = {col = col, row = row, mul = table_126_bmul[gamecommon.CommRandInt(table_126_bmul, pro)].mul}
+					allu[alluid] = xxx
+					table.insert(iconsAttachData.boardsInfo,xxx)
+					iconsAttachData.uNum = iconsAttachData.uNum + 1
+					iconsAttachData.umul = iconsAttachData.umul + xxx.mul
+				end 
+
             end
         end
     end
-	return umul 
+	return iconsAttachData.umul 
 end
 
 -- 判断U图标是否中奖
@@ -420,7 +442,7 @@ end
  --在普通模式中，只要出现2个SCATTER图标，就有机会通过随机功能将另一个符号带到屏幕上。
 function addfakeres1(boards,disInfo)
 	local disboards = table.clone(boards)
-	addSfake(disboards,3,1)
+	local changePoss = addSfake(disboards,3,1)
 	local diswl = gamecommon.WiningLineFinalCalc(disboards,table_126_payline,table_126_paytable,wilds,{})
 	local winLines = {}
 	local  winMul = 0
@@ -433,7 +455,10 @@ function addfakeres1(boards,disInfo)
 	boards = disboards,
 	winLines = winLines,
 	sumMul = winMul,
+	changePoss = changePoss,
+	iconsAttachData = {}
 	}
+	GetIconInfoU(disboards,res.iconsAttachData)
 	table.insert(disInfo,res)
 	FAKEPRO[1].pro = 0
 end 
@@ -449,7 +474,7 @@ function dischessdata(chessdata)
 				if row < minrow then
 					minrow = row
 				end 
-				table.insert(emptyPos,{col=col,Spos ={ col, row } })
+				table.insert(emptyPos,{col=col,pos ={ col, row } })
 				chessdata[col][1] = 0 
 				hasS = true
 				break
@@ -540,7 +565,10 @@ function addfakeres2(cboards,disInfo,isfake)
 			boards = chessdata,
 			winLines = winLines,
 			sumMul = winMul,
+			changePoss = emptyPos,
+			iconsAttachData = {}
 		}
+		GetIconInfoU(chessdata,res.iconsAttachData)
 		table.insert(disInfo,res)
 		boards = chessdata
 		if minrow == 1 then
@@ -597,6 +625,7 @@ function  addfakeres3(boards,disInfo)
 	end
 	local mass = needALLsNum 
 	mass = mass <0 and 0 or mass
+	local changePoss = {}
 	for i = 1, mass do
 		local emptyIndex = math.random(#emptyPos)
 		local emptycol = table.remove(emptyPos, emptyIndex)
@@ -604,6 +633,7 @@ function  addfakeres3(boards,disInfo)
 		local col, row = pos[1], pos[2]
 		--生成一个倍数图标
 		disboards[col][row] = U
+		table.insert(changePoss,{col =col,pos = pos })
 	end 
 	
 	local diswl = gamecommon.WiningLineFinalCalc(disboards,table_126_payline,table_126_paytable,wilds,{})
@@ -618,7 +648,10 @@ function  addfakeres3(boards,disInfo)
 		boards = disboards,
 		winLines = winLines,
 		sumMul = winMul,
+		changePoss = changePoss,
+		iconsAttachData = {}
 	}
+	GetIconInfoU(disboards,res.iconsAttachData,true)
 	table.insert(disInfo,res)
 		
 	
@@ -637,11 +670,12 @@ function  addfakeres4(boards,disInfo)
 			end
 		end
 	end
-
+	local changePoss = {}
 	local emptyIndex = math.random(#emptyPos)
 	local emptycol = table.remove(emptyPos, emptyIndex)
 	local pos = table.remove(emptycol, math.random(#emptycol))
 	local col, row = pos[1], pos[2]
+	table.insert(changePoss,{col =col,pos = pos })
 	--生成一个倍数图标
 	disboards[col][row] = W
 
@@ -658,18 +692,23 @@ function  addfakeres4(boards,disInfo)
 		boards = disboards,
 		winLines = winLines,
 		sumMul = winMul,
+		changePoss = changePoss,
+		iconsAttachData = {}
 	}
+	GetIconInfoU(disboards,res.iconsAttachData,true)
 	table.insert(disInfo,res)
 	
 end 
  --如果屏幕上出现了渔夫符号而没有大鱼时，在免费旋转结束时会随机出现火箭筒动画，从而将屏幕上除渔夫符号外的所有符号变成其他符号
 function  addfakeres5(boards,disInfo)
 	local chessdata = table.clone(boards)
+	local changePoss = {}
 	for col = 1, #chessdata do
 		for row = 1, #chessdata[col] do
 			local val = chessdata[col][row]
 			if val ~= W then 
 				chessdata[col][row] = 0 
+				table.insert(changePoss,{col =col,pos = {col,row} })
 			end 
 		end
 		
@@ -690,6 +729,9 @@ function  addfakeres5(boards,disInfo)
 		boards = chessdata,
 		winLines = winLines,
 		sumMul = winMul,
+		changePoss = changePoss,
+		iconsAttachData = {}
 	}
+	GetIconInfoU(chessdata,res.iconsAttachData,true)
 	table.insert(disInfo,res)
 end 
