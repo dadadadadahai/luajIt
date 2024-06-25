@@ -1,4 +1,4 @@
--- 自动生成 ./excel/game/126/RTP100.xlsx(table_126_buyfree)
+-- 自动生成 ./excel/game/126/standard.xlsx(table_126_buyfree)
 return {
 
     [1] = {
