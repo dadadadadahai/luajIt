@@ -516,13 +516,17 @@ function dropFillZero(data)
         end
     end
 end
-function reChessHandle(chessdata)
+function reChessHandle(chessdata,fake)
 	local disboards = gamecommon.CreateSpecialChessData(DataFormat, table_126_normalspin)
     for col = 1, #chessdata do
 		for row = 1, #chessdata[col] do
 			local val = chessdata[col][row]
 			if val == 0 then 
-			chessdata[col][row] = disboards[col][row]
+			if fake == 5 and  (disboards[col][row] == S or disboards[col][row] == W) then 
+				chessdata[col][row] = math.random(10)
+			else 
+				chessdata[col][row] = disboards[col][row]
+			end 
 			end 
 		end 
     end
@@ -539,7 +543,7 @@ function addfakeres2(cboards,disInfo,isfake)
             dropFillZero(chessdata[v.col])
         end
         --棋盘重新填充处理
-        reChessHandle(chessdata)
+        reChessHandle(chessdata,2)
 		minrow = minrow - 1
 		if minrow > 1 then 
 			if math.random(10000) < 5000 then
@@ -715,7 +719,7 @@ function  addfakeres5(boards,disInfo)
 	end
 
 	--棋盘重新填充处理
-	reChessHandle(chessdata)
+	reChessHandle(chessdata,5)
 
 	local diswl = gamecommon.WiningLineFinalCalc(chessdata,table_126_payline,table_126_paytable,wilds,{})
 	local winLines = {}

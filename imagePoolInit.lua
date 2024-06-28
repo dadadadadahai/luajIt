@@ -259,7 +259,7 @@ isGzip = 1
 RunTimes = 1
 --图库产生逻辑
 imageType =  2
-TestGameId = 126
+TestGameId = 161
 ischecked = false
 print('run start')
 main()

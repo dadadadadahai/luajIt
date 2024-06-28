@@ -4,7 +4,7 @@ return {
     [1] = {
         ID = 1,
         iconId = 1,
-        pro = 0,
+        pro = 10000,
     },
 
     [2] = {
@@ -16,7 +16,7 @@ return {
     [3] = {
         ID = 3,
         iconId = 3,
-        pro = 0,
+        pro = 10000,
     },
 
     [4] = {
@@ -28,7 +28,7 @@ return {
     [5] = {
         ID = 5,
         iconId = 5,
-        pro = 0,
+        pro = 10000,
     },
 
     [6] = {
