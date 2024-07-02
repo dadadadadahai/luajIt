@@ -51,8 +51,54 @@ function Normal()
     return res, winMul, imageType
 end
 
-function bonus()
-    -- 获取W元素
+function initU(boards)
+	local emptyPos = {1,2,3,4,5}
+	local cols={}
+	local colnums = table_161_bonusPro[gamecommon.CommRandInt(table_161_bonusPro, 'pro')].num
+	for i = 1, colnums , 1 do
+		local curcol =  table.remove(emptyPos, math.random(#emptyPos))
+		table.insert(cols,curcol)
+		for row = 1, #boards[curcol] do
+			 boards[curcol][row] = U
+		end
+		
+	end
+	return cols 
+end 
+function calc_U(boards)
+	local Nums = 0
+	for col = 1,5 do
+		for row = 1,3 do
+			local val = boards[col][row]
+			if val == U then
+				Nums = Nums + 1
+			end
+		end
+	end
+	return  Nums 
+      
+end 
+function addU(boards,nums)
+	local emptyPos = {}
+	for col = 1, 5 , 1 do
+		for row = 1, #boards[col] do
+			local val = boards[col][row]
+			if val == 0 then
+				table.insert(emptyPos, { col, row })
+			end 
+		end
+
+	end
+	for i = 1, nums , 1 do
+		local pos =table.remove(emptyPos, math.random(#emptyPos))  
+		local col, row = pos[1], pos[2]
+		boards[col][row] =  U 
+	end
+
+	
+end 
+function NormaltoBonus()
+   -- 获取W元素
     local wilds = {}
     wilds[W] = 1
     local nowild = {}
@@ -63,10 +109,9 @@ function bonus()
     -- 获取中奖线
     res.winlines = {}
     local winMul = 0
-    local imageType = 1
     -- respin中奖金额
 	boards = gamecommon.CreateSpecialChessData(DataFormat,table_161_normalspin)
-	addGOLDSEVEN(boards,true)
+	local cols = initU(boards)
 	-- 计算中奖倍数
 	local winlines = gamecommon.WiningLineFinalCalc(boards,table_161_payline,table_161_paytable,wilds,nowild)
 	-- 计算中奖线金额
@@ -74,35 +119,117 @@ function bonus()
 		table.insert(res.winlines, {v.line, v.num, v.mul,v.ele})
 		winMul = sys.addToFloat(winMul,v.mul)
 	end
-	if calc_GSeven(boards) >= 3 then 
-		imageType = 3
-		local curbonus = table_161_bonusPro[gamecommon.CommRandInt(table_161_bonusPro, 'pro')]
-		res.bonus = {}
-		res.bonus.mul = curbonus.mul  
-		res.bonus.info = {}
-		local curbonusinfo = {}
-		for i = 1,4 do
-			if i ~= curbonus.ID then
-				table.insert(curbonusinfo,i)
-				table.insert(curbonusinfo,i)
-			end 
-		end
-		curbonusinfo =table.shuffle(curbonusinfo)
-		local maxnums = math.random(0,6)
-		for i=1,maxnums do
-			table.insert(res.bonus.info,table.remove(curbonusinfo,1))
-		end
-		table.insert(res.bonus.info,curbonus.ID)
-		table.insert(res.bonus.info,curbonus.ID)
-		res.bonus.info =table.shuffle(res.bonus.info)
-		table.insert(res.bonus.info,curbonus.ID)
-		winMul = winMul + res.bonus.mul
-	else
-		print("@@@@@@@@@@@@@@@@@@@@")
-	end 
     -- 棋盘数据
     res.boards = boards
-    return res, winMul, imageType
+	res.winMul = winMul
+	res.cols = cols 
+    return res, winMul
+end 
+function initcolsboards(cols)
+	local initboards = {}
+	for i=1,5,1 do
+		initboards[i]={}
+		for j=1,3,1 do
+			initboards[i][j]= 0 
+		end 
+	end 
+	for _,v in ipairs(cols) do
+		for j=1,3,1 do
+			initboards[v][j]= U
+		end 
+	end
+	return initboards
+end
+
+
+
+function lastBonus(boards)
+   -- 获取W元素
+    local wilds = {}
+    wilds[W] = 1
+    local nowild = {}
+   
+    -- 生成返回数据
+    local res = {}
+    -- 获取中奖线
+    res.winlines = {}
+    local winMul = 0
+    -- respin中奖金额
+	for col = 1, 5 , 1 do
+		for row = 1, #boards[col] do
+			local val = boards[col][row]
+			if val == 0 then
+				boards[col][row] = math.random(8)
+			end 
+		end
+
+	end
+	-- 计算中奖倍数
+	local winlines = gamecommon.WiningLineFinalCalc(boards,table_161_payline,table_161_paytable,wilds,nowild)
+	-- 计算中奖线金额
+	for k, v in ipairs(winlines) do
+		table.insert(res.winlines, {v.line, v.num, v.mul,v.ele})
+		winMul = sys.addToFloat(winMul,v.mul)
+	end
+    -- 棋盘数据
+    res.boards = boards
+	res.winMul = winMul
+    return res, winMul	
+end 
+
+function firstBonus(boards)
+    -- 生成返回数据
+    local res = {}
+    -- 棋盘数据
+    res.boards = boards
+    return res	
+end 
+
+function bonus()
+    local tFreeNum = 3
+    local cFreeNum = 0
+	local allInfos = {}
+	local allwinMul = 0 
+	local UInfos = {}
+	local ntfres,ntfwinmul = NormaltoBonus()
+	allwinMul = allwinMul + ntfwinmul
+	local cols = ntfres.cols
+	local maxUnums = math.random(10,12)
+	local initboards =initcolsboards(cols)
+	local firstres = firstBonus(initboards)
+	table.insert(allInfos, firstres)
+	while true do	
+		-- 初始棋盘
+		
+		-- 生成返回数据
+		local res = {}
+		-- respin中奖金额
+		local boards  = table.clone(initboards)
+		local numsU = calc_U(boards)
+		if numsU < maxUnums then 
+			local addUnum = table_161_UPro[gamecommon.CommRandInt(table_161_UPro, 'pro')].num
+			local canaddUnum = maxUnums- numsU
+			if addUnum > canaddUnum then addUnum = canaddUnum end  
+			if addUnum > 0 then 
+				tFreeNum = tFreeNum + 1
+				addU(boards,addUnum)
+			end 
+		end 
+		-- 棋盘数据
+
+		initboards = table.clone(boards)
+		cFreeNum = cFreeNum + 1
+		res.boards = boards
+		table.insert(allInfos, res)
+		if cFreeNum >= tFreeNum then
+            break
+        end
+	end 
+	local lastres,lastwinmul = lastBonus(initboards)
+	allwinMul = allwinMul + lastwinmul
+	table.insert(allInfos, lastres)
+	ntfres.allInfos = allInfos
+    return ntfres, allwinMul,3
 end
 function addS(boards,nums)
 	local emptyPos = {}
